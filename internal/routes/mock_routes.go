@@ -7,9 +7,11 @@ import (
 )
 
 // SetupMockRoutes configures all mock API routes
-func SetupMockRoutes(router *gin.Engine) {
+func SetupMockRoutes(router *gin.Engine) error {
 	// Set trusted proxies (for production, specify actual proxy IPs)
-	router.SetTrustedProxies([]string{"127.0.0.1", "::1"})
+if err := router.SetTrustedProxies([]string{"127.0.0.1", "::1"}); err != nil {
+		return err
+	}
 	
 	// Serve static files
 	router.Static("/static", "./static")
@@ -147,5 +149,6 @@ func SetupMockRoutes(router *gin.Engine) {
 			reports.POST("/export", reportController.ExportData)
 		}
 	}
+	return nil
 }
 

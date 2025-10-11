@@ -15,7 +15,9 @@ func TestHealthEndpoint(t *testing.T) {
 
 	// Create test router
 	router := gin.New()
-	SetupMockRoutes(router)
+	if err := SetupMockRoutes(router); err != nil {
+		t.Fatal("Failed to setup routes:", err)
+	}
 
 	// Create test request
 	w := httptest.NewRecorder()
@@ -35,7 +37,9 @@ func TestMockEndpoints(t *testing.T) {
 
 	// Create test router
 	router := gin.New()
-	SetupMockRoutes(router)
+	if err := SetupMockRoutes(router); err != nil {
+		t.Fatal("Failed to setup routes:", err)
+	}
 
 	// Test cases
 	testCases := []struct {
@@ -56,8 +60,26 @@ func TestMockEndpoints(t *testing.T) {
 			req, _ := http.NewRequest(tc.method, tc.path, nil)
 			router.ServeHTTP(w, req)
 
-			assert.Equal(t, http.StatusOK, w.Code, "Response code should be OK")
-			assert.Contains(t, w.Body.String(), "Mock endpoint")
+			if tc.name == "Auth Register" {
+				assert.Equal(t, http.StatusCreated, w.Code, "Register should return Created status")
+				assert.Contains(t, w.Body.String(), "User registered successfully")
+			} else {
+				assert.Equal(t, http.StatusOK, w.Code, "Response code should be OK")
+			}
+
+			// Verify response contains required fields
+			switch tc.name {
+			case "Auth Login":
+				assert.Contains(t, w.Body.String(), "Login successful")
+				assert.Contains(t, w.Body.String(), "tokens")
+				assert.Contains(t, w.Body.String(), "user")
+			case "Get User":
+				assert.Contains(t, w.Body.String(), "user")
+			case "Get Accounts":
+				assert.Contains(t, w.Body.String(), "accounts")
+			case "Get Transactions":
+				assert.Contains(t, w.Body.String(), "transactions")
+			}
 		})
 	}
 }

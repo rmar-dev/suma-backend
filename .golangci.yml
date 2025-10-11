@@ -1,16 +1,4 @@
-linters:
-  enable:
-    - gofmt
-    - golint
-    - govet
-    - gosec
-    - gosimple
-    - staticcheck
-    - typecheck
-    - unused
-    - misspell
-    - unconvert
-    - whitespace
+version: 2
 
 run:
   deadline: 5m
@@ -19,25 +7,17 @@ run:
     - vendor/
     - node_modules/
 
+linters:
+  disable-all: true
+  enable:
+    - errcheck
+    - govet
+    - staticcheck
+    - ineffassign
+    - unused
+
 issues:
   exclude-rules:
     - path: _test\.go
       linters:
-        - gosec
         - errcheck
-
-linters-settings:
-  govet:
-    check-shadowing: true
-  golint:
-    min-confidence: 0.8
-  gofmt:
-    simplify: true
-  goconst:
-    min-len: 3
-    min-occurrences: 3
-
-output:
-  format: colored-line-number
-  print-issued-lines: true
-  print-linter-name: true

@@ -17,7 +17,9 @@ func TestMockRoutes(t *testing.T) {
 
 	// Create test router
 	router := gin.New()
-	SetupMockRoutes(router)
+	if err := SetupMockRoutes(router); err != nil {
+		t.Fatal("Failed to setup routes:", err)
+	}
 
 	// Test cases
 t.Skip("Mock endpoints return comprehensive data instead of simple responses")

@@ -121,12 +121,7 @@ func (c *ConfigController) GetUserConfig(ctx *gin.Context) {
 // @Success 200 {object} services.MenuConfig
 // @Router /api/v1/config/menus [get]
 func (c *ConfigController) GetMenus(ctx *gin.Context) {
-	// In mock mode, use a default user ID
-	userID := ctx.GetString("user_id")
-	if userID == "" {
-		// Mock user ID for testing
-		userID = "123e4567-e89b-12d3-a456-426614174000"
-	}
+	// No need for user ID in mock mode
 	
 	// TODO: Get user premium status from database
 	isPremium := false

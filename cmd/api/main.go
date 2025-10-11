@@ -49,7 +49,9 @@ func main() {
 	router.Use(cors.New(config))
 
 	// Setup mock routes
-	routes.SetupMockRoutes(router)
+	if err := routes.SetupMockRoutes(router); err != nil {
+		log.Fatal("Failed to setup routes:", err)
+	}
 
 	// Start server
 	fmt.Printf("🚀 Finance App API (Mock Mode) starting on port %s\n", port)

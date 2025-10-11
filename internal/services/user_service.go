@@ -84,7 +84,9 @@ func (s *UserService) Login(email, password string) (*models.User, string, strin
 	// Update last login
 	user.LastLogin = &time.Time{}
 	*user.LastLogin = time.Now()
-	s.repo.Update(user)
+if err := s.repo.Update(user); err != nil {
+		return nil, "", "", err
+	}
 
 	// Clear password before returning
 	user.Password = ""
