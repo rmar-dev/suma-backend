@@ -1,0 +1,67 @@
+name: CD
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'staging' }}
+    
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set environment variables
+        id: vars
+        run: |
+          if [ "${{ github.event.inputs.environment }}" = "production" ]; then
+            echo "RAILWAY_TOKEN=${{ secrets.RAILWAY_TOKEN_PROD }}" >> $GITHUB_ENV
+            echo "RAILWAY_SERVICE=${{ secrets.RAILWAY_SERVICE_PROD }}" >> $GITHUB_ENV
+          else
+            echo "RAILWAY_TOKEN=${{ secrets.RAILWAY_TOKEN_STAGING }}" >> $GITHUB_ENV
+            echo "RAILWAY_SERVICE=${{ secrets.RAILWAY_SERVICE_STAGING }}" >> $GITHUB_ENV
+          fi
+
+      - name: Deploy to Railway
+        uses: bervProject/railway-deploy@main
+        with:
+          railway_token: ${{ env.RAILWAY_TOKEN }}
+          service: ${{ env.RAILWAY_SERVICE }}
+
+      - name: Run Database Migrations
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          curl -L https://github.com/golang-migrate/migrate/releases/download/v4.16.2/migrate.linux-amd64.tar.gz | tar xvz
+          ./migrate -database "${DATABASE_URL}" -path migrations up
+
+      - name: Run Health Check
+        uses: jtalk/url-health-check-action@v3
+        with:
+          url: ${{ secrets.APP_URL }}/health
+          max-attempts: 5
+          retry-delay: 5s
+
+      - name: Notify Slack
+        if: always()
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+          text: |
+            Deployment to ${{ github.event.inputs.environment || 'staging' }} ${{ job.status }}
+            ${{ github.event.head_commit.message }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
