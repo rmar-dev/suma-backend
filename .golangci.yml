@@ -1,48 +1,25 @@
 # This field used to be called 'run.deadline' in old versions
 run:
+  # NOTE: this used to be called 'deadline' in old versions
   timeout: 5m
   tests: true
   skip-dirs:
     - vendor/
     - node_modules/
 
-# List of enabled linters
 linters:
-  # Enable all linters by default
+  # Disable all linters except those explicitly enabled
   disable-all: true
   enable:
-    - errcheck
-    - govet
-    - staticcheck
-    - ineffassign
-    - unused
+    - errcheck  # check for unchecked errors
+    - govet    # go vet (examines Go source code and reports suspicious constructs)
+    - staticcheck  # checks for common mistakes and suggests improvements
+    - ineffassign  # detects ineffectual assignments
+    - unused       # checks for unused constants, variables, functions and types
 
-# Linter settings
 issues:
-  # Don't report certain issues for test files
+  # Exclude certain issues for test files
   exclude-rules:
     - path: _test\.go
       linters:
-        - errcheck
-
-run:
-  deadline: 5m
-  tests: true
-  skip-dirs:
-    - vendor/
-    - node_modules/
-
-linters:
-  disable-all: true
-  enable:
-    - errcheck
-    - govet
-    - staticcheck
-    - ineffassign
-    - unused
-
-issues:
-  exclude-rules:
-    - path: _test\.go
-      linters:
-        - errcheck
+        - errcheck  # don't check for unchecked errors in tests
