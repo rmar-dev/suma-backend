@@ -1,3 +1,6 @@
+# Version of the config format
+version: 2
+
 # This field used to be called 'run.deadline' in old versions
 run:
   # NOTE: this used to be called 'deadline' in old versions
