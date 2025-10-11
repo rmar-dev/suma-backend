@@ -1,4 +1,29 @@
-version: 2
+# This field used to be called 'run.deadline' in old versions
+run:
+  timeout: 5m
+  tests: true
+  skip-dirs:
+    - vendor/
+    - node_modules/
+
+# List of enabled linters
+linters:
+  # Enable all linters by default
+  disable-all: true
+  enable:
+    - errcheck
+    - govet
+    - staticcheck
+    - ineffassign
+    - unused
+
+# Linter settings
+issues:
+  # Don't report certain issues for test files
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - errcheck
 
 run:
   deadline: 5m
