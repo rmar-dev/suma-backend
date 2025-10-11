@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CI/CD workflows with GitHub Actions
 - Development guidelines and documentation
 - Project task planning
+- Basic test infrastructure
+- Module path and import fixes
 
 ### Changed
 - N/A
