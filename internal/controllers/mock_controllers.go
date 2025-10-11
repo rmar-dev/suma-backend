@@ -3,7 +3,7 @@ package controllers
 import (
 	"net/http"
 	"github.com/gin-gonic/gin"
-	"github.com/suma/finance-app-api/internal/mocks"
+	"github.com/rmar-dev/suma-backend/internal/mocks"
 	"github.com/google/uuid"
 	"time"
 )

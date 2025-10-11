@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/suma/finance-app-api/internal/models"
-	"github.com/suma/finance-app-api/internal/repository"
-	"github.com/suma/finance-app-api/pkg/auth"
+	"github.com/rmar-dev/suma-backend/internal/models"
+	"github.com/rmar-dev/suma-backend/internal/repository"
+	"github.com/rmar-dev/suma-backend/pkg/auth"
 	"golang.org/x/crypto/bcrypt"
 )
 

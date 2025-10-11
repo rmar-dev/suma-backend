@@ -2,8 +2,8 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/suma/finance-app-api/internal/controllers"
-	"github.com/suma/finance-app-api/internal/services"
+	"github.com/rmar-dev/suma-backend/internal/controllers"
+	"github.com/rmar-dev/suma-backend/internal/services"
 )
 
 // SetupMockRoutes configures all mock API routes
@@ -148,3 +148,4 @@ func SetupMockRoutes(router *gin.Engine) {
 		}
 	}
 }
+

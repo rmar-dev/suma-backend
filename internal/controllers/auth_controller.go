@@ -6,9 +6,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"github.com/suma/finance-app-api/internal/database"
-	"github.com/suma/finance-app-api/internal/models"
-	"github.com/suma/finance-app-api/pkg/auth"
+	"github.com/rmar-dev/suma-backend/internal/database"
+	"github.com/rmar-dev/suma-backend/internal/models"
+	"github.com/rmar-dev/suma-backend/pkg/auth"
 	"gorm.io/gorm"
 )
 

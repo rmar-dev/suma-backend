@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/suma/finance-app-api/internal/services"
+	"github.com/rmar-dev/suma-backend/internal/services"
 )
 
 type ConfigController struct {

@@ -3,7 +3,7 @@ package repository
 import (
 	"time"
 
-	"github.com/suma/finance-app-api/internal/models"
+	"github.com/rmar-dev/suma-backend/internal/models"
 	"gorm.io/gorm"
 )
 
