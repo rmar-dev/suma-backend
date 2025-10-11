@@ -32,7 +32,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: ''1.24''
+          go-version: '1.24'
           cache: true
           cache-dependency-path: go.sum
           
@@ -45,7 +45,7 @@ jobs:
         with:
           path: |
             ~/go/bin
-          key: ${{ runner.os }}-go-tools-${{ hashFiles(''**/go.sum'') }}
+          key: ${{ runner.os }}-go-tools-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-tools-
 
