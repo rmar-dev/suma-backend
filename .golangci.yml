@@ -1,5 +1,5 @@
 # Version of the config format
-version: 2
+version: "2"
 
 # This field used to be called 'run.deadline' in old versions
 run:
