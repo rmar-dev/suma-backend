@@ -1,9 +1,6 @@
-# Version of the config format
-version: "2"
-
-# This field used to be called 'run.deadline' in old versions
+# golangci-lint v2.5.0 configuration
+version: 2
 run:
-  # NOTE: this used to be called 'deadline' in old versions
   timeout: 5m
   tests: true
   skip-dirs:
