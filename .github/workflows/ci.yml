@@ -45,8 +45,19 @@ jobs:
       - name: Run linter
         uses: golangci/golangci-lint-action@v3
         with:
-          version: v1.54
+          version: v2.5.0
           args: --timeout=5m
+          # Only show new issues for pull requests
+          only-new-issues: true
+          # Optional: show only new issues if there are any (not only if there are new files)
+          # new-from-rev: HEAD~
+          # Optional: if set to true then the all caching functionality will be complete disabled,
+          #          takes precedence over all other caching options.
+          skip-cache: false
+          # Optional: if set to true then the action don't cache or restore ~/go/pkg.
+          skip-pkg-cache: false
+          # Optional: if set to true then the action don't cache or restore ~/.cache/go-build.
+          skip-build-cache: false
 
       - name: Run tests
         run: go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...

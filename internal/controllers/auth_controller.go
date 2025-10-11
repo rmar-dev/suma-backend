@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
+	validatorlib "github.com/go-playground/validator/v10"
 	"github.com/rmar-dev/suma-backend/internal/database"
 	"github.com/rmar-dev/suma-backend/internal/models"
 	"github.com/rmar-dev/suma-backend/pkg/auth"
@@ -15,7 +15,7 @@ import (
 type AuthController struct {
 	db         *gorm.DB
 	jwtManager *auth.JWTManager
-	validator  *validator.Validate
+	validator  *validatorlib.Validate
 }
 
 // NewAuthController creates a new authentication controller
@@ -23,7 +23,7 @@ func NewAuthController(jwtManager *auth.JWTManager) *AuthController {
 	return &AuthController{
 		db:         database.GetDB(),
 		jwtManager: jwtManager,
-		validator:  validator.New(),
+		validator:  validatorlib.New(),
 	}
 }
 
