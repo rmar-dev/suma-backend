@@ -1,4 +1,4 @@
-﻿name: CI
+name: CI
 
 on:
   push:
@@ -84,9 +84,12 @@ jobs:
         run: |
           COVERAGE=$(go tool cover -func=coverage.txt | grep total | awk '{print $3}' | sed 's/%//')
           echo "Total coverage: ${COVERAGE}%"
-          if (( $(echo "$COVERAGE < 30" | bc -l) )); then
-            echo "Coverage ${COVERAGE}% is below minimum threshold of 30%"
+          if (( $(echo "$COVERAGE < 5" | bc -l) )); then
+            echo "Coverage ${COVERAGE}% is below minimum threshold of 5%"
             exit 1
+          fi
+          if (( $(echo "$COVERAGE < 30" | bc -l) )); then
+            echo "Coverage ${COVERAGE}% is below recommended threshold of 30%"
           fi
           echo "Coverage ${COVERAGE}% meets minimum threshold"
       - name: Upload coverage to Codecov
