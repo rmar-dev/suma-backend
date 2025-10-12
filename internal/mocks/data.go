@@ -8,7 +8,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// User mock data
+// GenerateMockUser creates and returns mock user data with realistic fields
 func GenerateMockUser() map[string]interface{} {
 	return map[string]interface{}{
 		"id":                 uuid.New().String(),
@@ -27,7 +27,7 @@ func GenerateMockUser() map[string]interface{} {
 	}
 }
 
-// Account mock data
+// GenerateMockAccounts generates a slice of mock bank account data
 func GenerateMockAccounts() []map[string]interface{} {
 	accounts := []map[string]interface{}{
 		{
@@ -64,7 +64,7 @@ func GenerateMockAccounts() []map[string]interface{} {
 	return accounts
 }
 
-// Transaction mock data
+// GenerateMockTransactions creates a slice of mock financial transactions
 func GenerateMockTransactions() []map[string]interface{} {
 	categories := []string{"Alimentação", "Transportes", "Entretenimento", "Serviços", "Saúde", "Educação", "Compras"}
 	merchants := []string{"Continente", "Pingo Doce", "Galp", "Netflix", "Spotify", "Farmácia Santos", "Fnac", "Worten"}
@@ -99,7 +99,7 @@ func GenerateMockTransactions() []map[string]interface{} {
 	return transactions
 }
 
-// Subscription mock data
+// GenerateMockSubscriptions generates mock subscription service data
 func GenerateMockSubscriptions() []map[string]interface{} {
 	subscriptions := []map[string]interface{}{
 		{
@@ -170,7 +170,7 @@ func GenerateMockSubscriptions() []map[string]interface{} {
 	return subscriptions
 }
 
-// Budget mock data
+// GenerateMockBudgets creates mock budget planning data with categories
 func GenerateMockBudgets() []map[string]interface{} {
 	budgets := []map[string]interface{}{
 		{
@@ -235,7 +235,7 @@ func GenerateMockBudgets() []map[string]interface{} {
 	return budgets
 }
 
-// Report summary mock data
+// GenerateMockReportSummary generates mock financial report summary data
 func GenerateMockReportSummary() map[string]interface{} {
 	return map[string]interface{}{
 		"period": map[string]interface{}{
@@ -270,7 +270,7 @@ func GenerateMockReportSummary() map[string]interface{} {
 	}
 }
 
-// Settings preferences
+// GenerateMockSettings creates mock user settings and preferences data
 func GenerateMockSettings() map[string]interface{} {
 	return map[string]interface{}{
 		"notifications": map[string]interface{}{
