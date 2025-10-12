@@ -1,4 +1,4 @@
-name: CI
+﻿name: CI
 
 on:
   push:
@@ -26,7 +26,7 @@ jobs:
         uses: golangci/golangci-lint-action@v6
         with:
           version: v1.64.8
-          args: --timeout=5m ./backend/...
+          args: --timeout=5m
           only-new-issues: true
 
   build:
@@ -43,11 +43,9 @@ jobs:
           go-version: ${{ matrix.go-version }}
       - name: Build binary
         run: |
-          cd backend
           go build -v -o api ./cmd/api
       - name: Verify binary
         run: |
-          cd backend
           ./api --help || echo "Binary created successfully"
 
   test:
@@ -75,7 +73,6 @@ jobs:
           go-version: '1.24'
       - name: Run tests
         run: |
-          cd backend
           go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
         env:
           DB_HOST: localhost
@@ -85,7 +82,6 @@ jobs:
           DB_NAME: suma_test
       - name: Check coverage threshold
         run: |
-          cd backend
           COVERAGE=$(go tool cover -func=coverage.txt | grep total | awk '{print $3}' | sed 's/%//')
           echo "Total coverage: ${COVERAGE}%"
           if (( $(echo "$COVERAGE < 30" | bc -l) )); then
@@ -96,7 +92,7 @@ jobs:
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
-          files: ./backend/coverage.txt
+          files: ./coverage.txt
           fail_ci_if_error: false
           flags: backend
 
@@ -114,7 +110,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/go/bin
-          key: ${{ runner.os }}-security-tools-${{ hashFiles('backend/go.sum') }}
+          key: ${{ runner.os }}-security-tools-${{ hashFiles('go.sum') }}
       - name: Install security tools
         if: steps.cache-tools.outputs.cache-hit != 'true'
         run: |
@@ -123,23 +119,20 @@ jobs:
           go install honnef.co/go/tools/cmd/staticcheck@latest
       - name: Run Gosec Security Scanner
         run: |
-          cd backend
           gosec -fmt=json -out=gosec-report.json -no-fail ./...
           gosec ./...
       - name: Run Go Vulnerability Check
         run: |
-          cd backend
           govulncheck ./...
       - name: Run Static Check
         run: |
-          cd backend
           staticcheck ./...
       - name: Upload Gosec report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: gosec-report
-          path: backend/gosec-report.json
+          path: gosec-report.json
 
   dependency-review:
     name: Dependency Review
