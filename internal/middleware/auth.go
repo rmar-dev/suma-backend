@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/suma/finance-app-api/pkg/auth"
+	"github.com/rmar-dev/suma-backend/pkg/auth"
 )
 
 // AuthMiddleware creates a JWT authentication middleware

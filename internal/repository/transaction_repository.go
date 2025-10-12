@@ -3,7 +3,7 @@ package repository
 import (
 	"time"
 
-	"github.com/suma/finance-app-api/internal/models"
+	"github.com/rmar-dev/suma-backend/internal/models"
 	"gorm.io/gorm"
 )
 
@@ -36,11 +36,11 @@ func (r *TransactionRepository) GetByID(id string) (*models.Transaction, error) 
 func (r *TransactionRepository) GetByAccountID(accountID string, limit int) ([]*models.Transaction, error) {
 	var transactions []*models.Transaction
 	query := r.db.Where("account_id = ?", accountID).Order("transaction_date DESC")
-	
+
 	if limit > 0 {
 		query = query.Limit(limit)
 	}
-	
+
 	err := query.Find(&transactions).Error
 	return transactions, err
 }
@@ -59,11 +59,11 @@ func (r *TransactionRepository) GetByDateRange(accountID string, startDate, endD
 func (r *TransactionRepository) GetByUserID(userID string, limit int) ([]*models.Transaction, error) {
 	var transactions []*models.Transaction
 	query := r.db.Where("user_id = ?", userID).Order("transaction_date DESC")
-	
+
 	if limit > 0 {
 		query = query.Limit(limit)
 	}
-	
+
 	err := query.Find(&transactions).Error
 	return transactions, err
 }
@@ -93,10 +93,10 @@ func (r *TransactionRepository) UpdateCategory(id, category string) error {
 // GetRecurringTransactions finds potential recurring transactions
 func (r *TransactionRepository) GetRecurringTransactions(accountID string) ([]*models.Transaction, error) {
 	var transactions []*models.Transaction
-	
+
 	// Get transactions from last 90 days that are likely recurring
 	startDate := time.Now().AddDate(0, 0, -90)
-	
+
 	err := r.db.Where(`account_id = ? AND 
 		transaction_date >= ? AND 
 		amount < 0 AND
@@ -105,23 +105,23 @@ func (r *TransactionRepository) GetRecurringTransactions(accountID string) ([]*m
 		accountID, startDate).
 		Order("merchant_name, transaction_date DESC").
 		Find(&transactions).Error
-		
+
 	return transactions, err
 }
 
 // GetMonthlySpending calculates total spending for a month
 func (r *TransactionRepository) GetMonthlySpending(userID string, year, month int) (float64, error) {
 	var total float64
-	
+
 	startDate := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.UTC)
 	endDate := startDate.AddDate(0, 1, -1)
-	
+
 	err := r.db.Model(&models.Transaction{}).
 		Select("SUM(ABS(amount))").
 		Where("user_id = ? AND transaction_date >= ? AND transaction_date <= ? AND amount < 0",
 			userID, startDate, endDate).
 		Scan(&total).Error
-		
+
 	return total, err
 }
 
@@ -131,25 +131,25 @@ func (r *TransactionRepository) GetCategorySpending(userID string, startDate, en
 		Category string
 		Total    float64
 	}
-	
+
 	var results []CategorySum
-	
+
 	err := r.db.Model(&models.Transaction{}).
 		Select("COALESCE(user_category, category, 'Uncategorized') as category, SUM(ABS(amount)) as total").
 		Where("user_id = ? AND transaction_date >= ? AND transaction_date <= ? AND amount < 0",
 			userID, startDate, endDate).
 		Group("COALESCE(user_category, category, 'Uncategorized')").
 		Scan(&results).Error
-	
+
 	if err != nil {
 		return nil, err
 	}
-	
+
 	categoryMap := make(map[string]float64)
 	for _, result := range results {
 		categoryMap[result.Category] = result.Total
 	}
-	
+
 	return categoryMap, nil
 }
 

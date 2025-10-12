@@ -14,37 +14,37 @@ func NewConfigService() *ConfigService {
 
 // FeatureFlags defines available features
 type FeatureFlags struct {
-	SubscriptionTracking     bool `json:"subscription_tracking"`
-	AutoDetection           bool `json:"auto_detection"`
-	BankConnection          bool `json:"bank_connection"`
-	BudgetManagement        bool `json:"budget_management"`
-	Analytics               bool `json:"analytics"`
-	DataExport              bool `json:"data_export"`
-	MultiAccount            bool `json:"multi_account"`
-	Notifications           bool `json:"notifications"`
-	DarkMode                bool `json:"dark_mode"`
-	MultiLanguage           bool `json:"multi_language"`
-	TwoFactorAuth           bool `json:"two_factor_auth"`
-	PaymentReminders        bool `json:"payment_reminders"`
-	SpendingInsights        bool `json:"spending_insights"`
-	GoalSetting             bool `json:"goal_setting"`
-	RecurringTransactions   bool `json:"recurring_transactions"`
-	CategoryCustomization   bool `json:"category_customization"`
-	ReportsGeneration       bool `json:"reports_generation"`
+	SubscriptionTracking  bool `json:"subscription_tracking"`
+	AutoDetection         bool `json:"auto_detection"`
+	BankConnection        bool `json:"bank_connection"`
+	BudgetManagement      bool `json:"budget_management"`
+	Analytics             bool `json:"analytics"`
+	DataExport            bool `json:"data_export"`
+	MultiAccount          bool `json:"multi_account"`
+	Notifications         bool `json:"notifications"`
+	DarkMode              bool `json:"dark_mode"`
+	MultiLanguage         bool `json:"multi_language"`
+	TwoFactorAuth         bool `json:"two_factor_auth"`
+	PaymentReminders      bool `json:"payment_reminders"`
+	SpendingInsights      bool `json:"spending_insights"`
+	GoalSetting           bool `json:"goal_setting"`
+	RecurringTransactions bool `json:"recurring_transactions"`
+	CategoryCustomization bool `json:"category_customization"`
+	ReportsGeneration     bool `json:"reports_generation"`
 }
 
 // MenuItem represents a navigation menu item
 type MenuItem struct {
-	ID          string      `json:"id"`
-	Label       string      `json:"label"`
-	Icon        string      `json:"icon"`
-	Route       string      `json:"route"`
-	Permission  string      `json:"permission,omitempty"`
-	Badge       *Badge      `json:"badge,omitempty"`
-	Children    []MenuItem  `json:"children,omitempty"`
-	IsVisible   bool        `json:"is_visible"`
-	IsPremium   bool        `json:"is_premium"`
-	Order       int         `json:"order"`
+	ID         string     `json:"id"`
+	Label      string     `json:"label"`
+	Icon       string     `json:"icon"`
+	Route      string     `json:"route"`
+	Permission string     `json:"permission,omitempty"`
+	Badge      *Badge     `json:"badge,omitempty"`
+	Children   []MenuItem `json:"children,omitempty"`
+	IsVisible  bool       `json:"is_visible"`
+	IsPremium  bool       `json:"is_premium"`
+	Order      int        `json:"order"`
 }
 
 // Badge for menu items (e.g., notification count)
@@ -55,14 +55,14 @@ type Badge struct {
 
 // AppConfig represents the complete app configuration
 type AppConfig struct {
-	Features        FeatureFlags          `json:"features"`
-	Menus           MenuConfig           `json:"menus"`
-	Settings        AppSettings          `json:"settings"`
-	Themes          []Theme              `json:"themes"`
-	Languages       []Language           `json:"languages"`
-	Categories      []Category           `json:"categories"`
+	Features          FeatureFlags       `json:"features"`
+	Menus             MenuConfig         `json:"menus"`
+	Settings          AppSettings        `json:"settings"`
+	Themes            []Theme            `json:"themes"`
+	Languages         []Language         `json:"languages"`
+	Categories        []Category         `json:"categories"`
 	SubscriptionTypes []SubscriptionType `json:"subscription_types"`
-	Currencies      []Currency           `json:"currencies"`
+	Currencies        []Currency         `json:"currencies"`
 }
 
 // MenuConfig contains all menu configurations
@@ -75,68 +75,68 @@ type MenuConfig struct {
 
 // AppSettings contains global app settings
 type AppSettings struct {
-	AppName             string   `json:"app_name"`
-	AppVersion          string   `json:"app_version"`
-	APIVersion          string   `json:"api_version"`
-	MaintenanceMode     bool     `json:"maintenance_mode"`
-	MaintenanceMessage  string   `json:"maintenance_message"`
-	MinClientVersion    string   `json:"min_client_version"`
-	TermsURL            string   `json:"terms_url"`
-	PrivacyURL          string   `json:"privacy_url"`
-	SupportEmail        string   `json:"support_email"`
-	SupportURL          string   `json:"support_url"`
-	DefaultCurrency     string   `json:"default_currency"`
-	DefaultLanguage     string   `json:"default_language"`
-	DefaultTheme        string   `json:"default_theme"`
-	DateFormat          string   `json:"date_format"`
-	TimeFormat          string   `json:"time_format"`
-	WeekStartsOn        int      `json:"week_starts_on"` // 0=Sunday, 1=Monday
-	SessionTimeout      int      `json:"session_timeout"` // minutes
-	MaxLoginAttempts    int      `json:"max_login_attempts"`
-	PasswordMinLength   int      `json:"password_min_length"`
-	AllowedFileTypes    []string `json:"allowed_file_types"`
-	MaxFileSize         int64    `json:"max_file_size"` // bytes
+	AppName            string   `json:"app_name"`
+	AppVersion         string   `json:"app_version"`
+	APIVersion         string   `json:"api_version"`
+	MaintenanceMode    bool     `json:"maintenance_mode"`
+	MaintenanceMessage string   `json:"maintenance_message"`
+	MinClientVersion   string   `json:"min_client_version"`
+	TermsURL           string   `json:"terms_url"`
+	PrivacyURL         string   `json:"privacy_url"`
+	SupportEmail       string   `json:"support_email"`
+	SupportURL         string   `json:"support_url"`
+	DefaultCurrency    string   `json:"default_currency"`
+	DefaultLanguage    string   `json:"default_language"`
+	DefaultTheme       string   `json:"default_theme"`
+	DateFormat         string   `json:"date_format"`
+	TimeFormat         string   `json:"time_format"`
+	WeekStartsOn       int      `json:"week_starts_on"`  // 0=Sunday, 1=Monday
+	SessionTimeout     int      `json:"session_timeout"` // minutes
+	MaxLoginAttempts   int      `json:"max_login_attempts"`
+	PasswordMinLength  int      `json:"password_min_length"`
+	AllowedFileTypes   []string `json:"allowed_file_types"`
+	MaxFileSize        int64    `json:"max_file_size"` // bytes
 }
 
 // Theme represents a UI theme
 type Theme struct {
-	ID      string            `json:"id"`
-	Name    string            `json:"name"`
-	IsDark  bool             `json:"is_dark"`
-	Colors  map[string]string `json:"colors"`
+	ID     string            `json:"id"`
+	Name   string            `json:"name"`
+	IsDark bool              `json:"is_dark"`
+	Colors map[string]string `json:"colors"`
 }
 
 // Language represents a supported language
 type Language struct {
-	Code      string `json:"code"`
-	Name      string `json:"name"`
+	Code       string `json:"code"`
+	Name       string `json:"name"`
 	NativeName string `json:"native_name"`
-	Direction string `json:"direction"` // ltr or rtl
-	IsDefault bool   `json:"is_default"`
+	Direction  string `json:"direction"` // ltr or rtl
+	IsDefault  bool   `json:"is_default"`
 }
 
 // Category for transactions
 type Category struct {
-	ID       string   `json:"id"`
-	Name     string   `json:"name"`
-	Icon     string   `json:"icon"`
-	Color    string   `json:"color"`
-	Type     string   `json:"type"` // income, expense, both
-	ParentID *string  `json:"parent_id,omitempty"`
+	ID       string  `json:"id"`
+	Name     string  `json:"name"`
+	Icon     string  `json:"icon"`
+	Color    string  `json:"color"`
+	Type     string  `json:"type"` // income, expense, both
+	ParentID *string `json:"parent_id,omitempty"`
 }
 
 // SubscriptionType represents billing cycles
 type SubscriptionType struct {
-	ID    string `json:"id"`
-	Name  string `json:"name"`
-	Days  int    `json:"days"`
+	ID   string `json:"id"`
+	Name string `json:"name"`
+	Days int    `json:"days"`
 }
 
 // Currency represents supported currencies
 type Currency struct {
-	Code   string `json:"code"`
-	Name   string `json:"name"`
-	Symbol string `json:"symbol"`
+	Code   string  `json:"code"`
+	Name   string  `json:"name"`
+	Symbol string  `json:"symbol"`
 	Rate   float64 `json:"rate"` // Exchange rate to EUR
 }
 
@@ -144,7 +144,7 @@ type Currency struct {
 func (s *ConfigService) GetFeatureFlags(userType string, isPremium bool) FeatureFlags {
 	// Base features for all users
 	features := FeatureFlags{
-		SubscriptionTracking:   true,
+		SubscriptionTracking:  true,
 		AutoDetection:         isPremium,
 		BankConnection:        true,
 		BudgetManagement:      true,
@@ -347,7 +347,7 @@ func (s *ConfigService) GetQuickActions(features FeatureFlags) []MenuItem {
 // GetAppConfig returns the complete app configuration
 func (s *ConfigService) GetAppConfig(userType string, isPremium bool, language string) AppConfig {
 	features := s.GetFeatureFlags(userType, isPremium)
-	
+
 	config := AppConfig{
 		Features: features,
 		Menus: MenuConfig{
@@ -356,12 +356,12 @@ func (s *ConfigService) GetAppConfig(userType string, isPremium bool, language s
 			SettingsMenu: s.GetSettingsMenu(features),
 			QuickActions: s.GetQuickActions(features),
 		},
-		Settings:  s.GetAppSettings(),
-		Themes:    s.GetThemes(),
-		Languages: s.GetLanguages(),
-		Categories: s.GetCategories(language),
+		Settings:          s.GetAppSettings(),
+		Themes:            s.GetThemes(),
+		Languages:         s.GetLanguages(),
+		Categories:        s.GetCategories(language),
 		SubscriptionTypes: s.GetSubscriptionTypes(language),
-		Currencies: s.GetCurrencies(),
+		Currencies:        s.GetCurrencies(),
 	}
 
 	return config
@@ -430,21 +430,21 @@ func (s *ConfigService) GetAppSettings() AppSettings {
 		MaintenanceMode:    false,
 		MaintenanceMessage: "",
 		MinClientVersion:   "1.0.0",
-		TermsURL:          "/terms",
-		PrivacyURL:        "/privacy",
-		SupportEmail:      "support@suma.pt",
-		SupportURL:        "/support",
-		DefaultCurrency:   "EUR",
-		DefaultLanguage:   "pt",
-		DefaultTheme:      "light",
-		DateFormat:        "DD/MM/YYYY",
-		TimeFormat:        "24h",
-		WeekStartsOn:      1, // Monday
-		SessionTimeout:    60, // minutes
-		MaxLoginAttempts:  5,
-		PasswordMinLength: 8,
-		AllowedFileTypes:  []string{"pdf", "csv", "xlsx"},
-		MaxFileSize:       10485760, // 10MB
+		TermsURL:           "/terms",
+		PrivacyURL:         "/privacy",
+		SupportEmail:       "support@suma.pt",
+		SupportURL:         "/support",
+		DefaultCurrency:    "EUR",
+		DefaultLanguage:    "pt",
+		DefaultTheme:       "light",
+		DateFormat:         "DD/MM/YYYY",
+		TimeFormat:         "24h",
+		WeekStartsOn:       1,  // Monday
+		SessionTimeout:     60, // minutes
+		MaxLoginAttempts:   5,
+		PasswordMinLength:  8,
+		AllowedFileTypes:   []string{"pdf", "csv", "xlsx"},
+		MaxFileSize:        10485760, // 10MB
 	}
 }
 
@@ -550,27 +550,70 @@ func (s *ConfigService) GetCurrencies() []Currency {
 func (s *ConfigService) GetUserConfig(userID string, isPremium bool) (map[string]interface{}, error) {
 	// This could fetch user-specific settings from database
 	config := map[string]interface{}{
-		"user_id":     userID,
-		"is_premium":  isPremium,
-		"features":    s.GetFeatureFlags("user", isPremium),
+		"user_id":    userID,
+		"is_premium": isPremium,
+		"features":   s.GetFeatureFlags("user", isPremium),
 		"preferences": map[string]interface{}{
-			"theme":        "light",
-			"language":     "pt",
-			"currency":     "EUR",
-			"date_format":  "DD/MM/YYYY",
-			"time_format":  "24h",
-			"week_starts":  1,
+			"theme":       "light",
+			"language":    "pt",
+			"currency":    "EUR",
+			"date_format": "DD/MM/YYYY",
+			"time_format": "24h",
+			"week_starts": 1,
 		},
 		"limits": map[string]interface{}{
-			"max_accounts":       func() int { if isPremium { return 10 } else { return 3 } }(),
-			"max_subscriptions":  func() int { if isPremium { return -1 } else { return 20 } }(),
-			"export_formats":     func() []string { if isPremium { return []string{"csv", "pdf", "xlsx"} } else { return []string{"csv"} } }(),
-			"data_retention":     func() int { if isPremium { return 365 } else { return 90 } }(), // days
+			"max_accounts": func() int {
+				if isPremium {
+					return 10
+				} else {
+					return 3
+				}
+			}(),
+			"max_subscriptions": func() int {
+				if isPremium {
+					return -1
+				} else {
+					return 20
+				}
+			}(),
+			"export_formats": func() []string {
+				if isPremium {
+					return []string{"csv", "pdf", "xlsx"}
+				} else {
+					return []string{"csv"}
+				}
+			}(),
+			"data_retention": func() int {
+				if isPremium {
+					return 365
+				} else {
+					return 90
+				}
+			}(), // days
 		},
 		"subscription": map[string]interface{}{
-			"plan":         func() string { if isPremium { return "premium" } else { return "free" } }(),
-			"price":        func() float64 { if isPremium { return 4.99 } else { return 0 } }(),
-			"renewal_date": func() *time.Time { if isPremium { t := time.Now().AddDate(0, 1, 0); return &t } else { return nil } }(),
+			"plan": func() string {
+				if isPremium {
+					return "premium"
+				} else {
+					return "free"
+				}
+			}(),
+			"price": func() float64 {
+				if isPremium {
+					return 4.99
+				} else {
+					return 0
+				}
+			}(),
+			"renewal_date": func() *time.Time {
+				if isPremium {
+					t := time.Now().AddDate(0, 1, 0)
+					return &t
+				} else {
+					return nil
+				}
+			}(),
 		},
 	}
 

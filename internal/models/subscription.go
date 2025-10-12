@@ -15,7 +15,7 @@ const (
 	SubscriptionStatusPaused   SubscriptionStatus = "paused"
 	SubscriptionStatusCanceled SubscriptionStatus = "canceled"
 	SubscriptionStatusExpired  SubscriptionStatus = "expired"
-	
+
 	BillingCycleMonthly   BillingCycle = "monthly"
 	BillingCycleQuarterly BillingCycle = "quarterly"
 	BillingCycleYearly    BillingCycle = "yearly"
@@ -24,60 +24,60 @@ const (
 )
 
 type Subscription struct {
-	ID              uuid.UUID          `gorm:"type:uuid;primary_key" json:"id"`
-	UserID          uuid.UUID          `gorm:"type:uuid;not null;index" json:"user_id"`
-	AccountID       uuid.UUID          `gorm:"type:uuid;not null;index" json:"account_id"`
-	
+	ID        uuid.UUID `gorm:"type:uuid;primary_key" json:"id"`
+	UserID    uuid.UUID `gorm:"type:uuid;not null;index" json:"user_id"`
+	AccountID uuid.UUID `gorm:"type:uuid;not null;index" json:"account_id"`
+
 	// Subscription details
-	Name            string             `gorm:"not null" json:"name"`
-	Description     string             `json:"description,omitempty"`
-	MerchantName    string             `json:"merchant_name"`
-	Category        string             `json:"category"`
-	
+	Name         string `gorm:"not null" json:"name"`
+	Description  string `json:"description,omitempty"`
+	MerchantName string `json:"merchant_name"`
+	Category     string `json:"category"`
+
 	// Billing information
-	Amount          float64            `gorm:"not null" json:"amount"`
-	Currency        string             `gorm:"default:'EUR'" json:"currency"`
-	BillingCycle    BillingCycle       `gorm:"type:varchar(20);not null" json:"billing_cycle"`
-	CustomDays      int                `json:"custom_days,omitempty"` // For custom billing cycles
-	
+	Amount       float64      `gorm:"not null" json:"amount"`
+	Currency     string       `gorm:"default:'EUR'" json:"currency"`
+	BillingCycle BillingCycle `gorm:"type:varchar(20);not null" json:"billing_cycle"`
+	CustomDays   int          `json:"custom_days,omitempty"` // For custom billing cycles
+
 	// Dates
-	StartDate       time.Time          `gorm:"not null" json:"start_date"`
-	NextBillingDate time.Time          `gorm:"not null;index" json:"next_billing_date"`
-	LastBillingDate *time.Time         `json:"last_billing_date,omitempty"`
-	EndDate         *time.Time         `json:"end_date,omitempty"`
-	
+	StartDate       time.Time  `gorm:"not null" json:"start_date"`
+	NextBillingDate time.Time  `gorm:"not null;index" json:"next_billing_date"`
+	LastBillingDate *time.Time `json:"last_billing_date,omitempty"`
+	EndDate         *time.Time `json:"end_date,omitempty"`
+
 	// Status and detection
-	Status          SubscriptionStatus `gorm:"type:varchar(20);default:'active'" json:"status"`
-	AutoDetected    bool               `gorm:"default:false" json:"auto_detected"`
-	Confidence      float32            `json:"confidence,omitempty"` // Detection confidence 0-1
-	
+	Status       SubscriptionStatus `gorm:"type:varchar(20);default:'active'" json:"status"`
+	AutoDetected bool               `gorm:"default:false" json:"auto_detected"`
+	Confidence   float32            `json:"confidence,omitempty"` // Detection confidence 0-1
+
 	// Notification settings
-	NotifyDaysBefore int               `gorm:"default:3" json:"notify_days_before"`
-	NotifyEnabled    bool              `gorm:"default:true" json:"notify_enabled"`
-	
+	NotifyDaysBefore int  `gorm:"default:3" json:"notify_days_before"`
+	NotifyEnabled    bool `gorm:"default:true" json:"notify_enabled"`
+
 	// Cost tracking
-	TotalPaid       float64            `json:"total_paid"`
-	PaymentCount    int                `json:"payment_count"`
-	
+	TotalPaid    float64 `json:"total_paid"`
+	PaymentCount int     `json:"payment_count"`
+
 	// Additional data
-	Website         string             `json:"website,omitempty"`
-	LogoURL         string             `json:"logo_url,omitempty"`
-	Color           string             `json:"color,omitempty"` // Brand color for UI
-	Notes           string             `json:"notes,omitempty"`
-	
+	Website string `json:"website,omitempty"`
+	LogoURL string `json:"logo_url,omitempty"`
+	Color   string `json:"color,omitempty"` // Brand color for UI
+	Notes   string `json:"notes,omitempty"`
+
 	// Cancellation
-	CancelURL       string             `json:"cancel_url,omitempty"`
-	CancelledAt     *time.Time         `json:"cancelled_at,omitempty"`
-	CancellationReason string          `json:"cancellation_reason,omitempty"`
-	
+	CancelURL          string     `json:"cancel_url,omitempty"`
+	CancelledAt        *time.Time `json:"cancelled_at,omitempty"`
+	CancellationReason string     `json:"cancellation_reason,omitempty"`
+
 	// Timestamps
-	CreatedAt       time.Time          `json:"created_at"`
-	UpdatedAt       time.Time          `json:"updated_at"`
-	
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+
 	// Relations
-	User            User               `gorm:"foreignKey:UserID" json:"-"`
-	Account         Account            `gorm:"foreignKey:AccountID" json:"-"`
-	Transactions    []Transaction      `gorm:"foreignKey:SubscriptionID" json:"transactions,omitempty"`
+	User         User          `gorm:"foreignKey:UserID" json:"-"`
+	Account      Account       `gorm:"foreignKey:AccountID" json:"-"`
+	Transactions []Transaction `gorm:"foreignKey:SubscriptionID" json:"transactions,omitempty"`
 }
 
 // BeforeCreate hook to set UUID

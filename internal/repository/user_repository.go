@@ -4,7 +4,7 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/suma/finance-app-api/internal/models"
+	"github.com/rmar-dev/suma-backend/internal/models"
 	"gorm.io/gorm"
 )
 

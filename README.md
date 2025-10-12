@@ -1,14 +1,43 @@
 # SUMA Finance App Backend
 
 ## Overview
-Backend service for the SUMA Finance application, providing APIs for personal finance management, bank integration, and financial analysis.
+SUMA Finance is a comprehensive personal finance management platform that helps users track their spending, manage subscriptions, and gain insights into their financial health. The backend service provides secure APIs for bank integration, transaction analysis, and financial management.
 
-## Technology Stack
-- Go (Golang)
-- PostgreSQL
-- TrueLayer API Integration
-- JWT Authentication
-- Gin Web Framework
+### Key Features
+- 🏦 Bank Integration via TrueLayer
+- 💰 Transaction Tracking & Categorization
+- 📊 Spending Analytics & Insights
+- 📅 Subscription Management & Detection
+- 📱 Multi-device Support
+- 🔒 Secure Authentication & Authorization
+
+## System Architecture
+
+### Technology Stack
+- **Language:** Go 1.21+
+- **Framework:** Gin Web Framework
+- **Database:** PostgreSQL 15
+- **Authentication:** JWT with refresh tokens
+- **Bank Integration:** TrueLayer API
+- **Documentation:** OpenAPI/Swagger
+- **Testing:** Go testing framework with testify
+- **CI/CD:** GitHub Actions
+
+### Core Components
+- **Authentication Service:** User management and security
+- **Transaction Service:** Transaction processing and categorization
+- **Account Service:** Bank account management and syncing
+- **Analytics Service:** Financial analysis and insights
+- **Subscription Service:** Recurring payment detection and management
+
+## Current Status
+The project is under active development. Current implementation includes:
+
+✅ Basic project structure
+✅ CI/CD setup
+✅ Development guidelines
+🚧 Database migrations (in progress)
+📋 Feature planning complete
 
 ## Project Structure
 ```

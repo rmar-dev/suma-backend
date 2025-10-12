@@ -2,24 +2,26 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/suma/finance-app-api/internal/controllers"
-	"github.com/suma/finance-app-api/internal/services"
+	"github.com/rmar-dev/suma-backend/internal/controllers"
+	"github.com/rmar-dev/suma-backend/internal/services"
 )
 
 // SetupMockRoutes configures all mock API routes
-func SetupMockRoutes(router *gin.Engine) {
+func SetupMockRoutes(router *gin.Engine) error {
 	// Set trusted proxies (for production, specify actual proxy IPs)
-	router.SetTrustedProxies([]string{"127.0.0.1", "::1"})
-	
+	if err := router.SetTrustedProxies([]string{"127.0.0.1", "::1"}); err != nil {
+		return err
+	}
+
 	// Serve static files
 	router.Static("/static", "./static")
 	router.StaticFile("/favicon.ico", "./static/favicon.ico")
-	
+
 	// Root route - API Documentation page
 	router.GET("/", func(c *gin.Context) {
 		c.File("./static/api-docs.html")
 	})
-	
+
 	// Alternative documentation routes
 	router.GET("/docs", func(c *gin.Context) {
 		c.File("./static/api-docs.html")
@@ -27,7 +29,7 @@ func SetupMockRoutes(router *gin.Engine) {
 	router.GET("/swagger", func(c *gin.Context) {
 		c.File("./static/api-docs.html")
 	})
-	
+
 	// Setup CORS for development
 	router.Use(func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
@@ -52,7 +54,7 @@ func SetupMockRoutes(router *gin.Engine) {
 	budgetController := controllers.NewMockBudgetController()
 	reportController := controllers.NewMockReportController()
 	navigationController := controllers.NewNavigationController()
-	
+
 	// Initialize configuration service and controller
 	configService := services.NewConfigService()
 	configController := controllers.NewConfigController(configService)
@@ -93,7 +95,7 @@ func SetupMockRoutes(router *gin.Engine) {
 
 		// Navigation routes
 		v1.GET("/navigation/menu", navigationController.GetMenuOptions)
-		
+
 		// Configuration routes
 		configController.RegisterRoutes(v1)
 
@@ -147,4 +149,5 @@ func SetupMockRoutes(router *gin.Engine) {
 			reports.POST("/export", reportController.ExportData)
 		}
 	}
+	return nil
 }

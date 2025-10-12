@@ -22,22 +22,22 @@ type User struct {
 	Language          string     `gorm:"default:'pt'" json:"language"`
 	Currency          string     `gorm:"default:'EUR'" json:"currency"`
 	Timezone          string     `gorm:"default:'Europe/Lisbon'" json:"timezone"`
-	
+
 	// Privacy & Compliance
 	GDPRConsentAt     *time.Time `json:"gdpr_consent_at,omitempty"`
 	TermsAcceptedAt   *time.Time `json:"terms_accepted_at,omitempty"`
 	PrivacyAcceptedAt *time.Time `json:"privacy_accepted_at,omitempty"`
 	MarketingConsent  bool       `gorm:"default:false" json:"marketing_consent"`
-	
+
 	// Account Status
 	Active    bool       `gorm:"default:true" json:"active"`
 	DeletedAt *time.Time `gorm:"index" json:"deleted_at,omitempty"`
 	LastLogin *time.Time `json:"last_login,omitempty"`
-	
+
 	// Timestamps
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
-	
+
 	// Relations
 	Accounts      []Account      `gorm:"foreignKey:UserID" json:"accounts,omitempty"`
 	Subscriptions []Subscription `gorm:"foreignKey:UserID" json:"subscriptions,omitempty"`
@@ -48,7 +48,7 @@ func (u *User) BeforeCreate(tx *gorm.DB) error {
 	if u.ID == uuid.Nil {
 		u.ID = uuid.New()
 	}
-	
+
 	if u.Password != "" {
 		hashedPassword, err := u.HashPassword(u.Password)
 		if err != nil {
@@ -56,7 +56,7 @@ func (u *User) BeforeCreate(tx *gorm.DB) error {
 		}
 		u.Password = hashedPassword
 	}
-	
+
 	return nil
 }
 

@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/suma/finance-app-api/internal/services"
+	"github.com/rmar-dev/suma-backend/internal/services"
 )
 
 type ConfigController struct {
@@ -28,7 +28,7 @@ func (c *ConfigController) RegisterRoutes(router *gin.RouterGroup) {
 		config.GET("/themes", c.GetThemes)
 		config.GET("/currencies", c.GetCurrencies)
 		config.GET("/categories", c.GetCategories)
-		
+
 		// Authenticated endpoints (in mock mode, we'll skip auth for now)
 		// In production, these would use: middleware.AuthMiddleware(jwtManager)
 		config.GET("/user", c.GetUserConfig)
@@ -48,10 +48,10 @@ func (c *ConfigController) RegisterRoutes(router *gin.RouterGroup) {
 // @Router /api/v1/config/app [get]
 func (c *ConfigController) GetAppConfig(ctx *gin.Context) {
 	lang := ctx.DefaultQuery("lang", "pt")
-	
+
 	// For public access, assume free user
 	config := c.configService.GetAppConfig("public", false, lang)
-	
+
 	ctx.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"data":    config,
@@ -69,7 +69,7 @@ func (c *ConfigController) GetAppConfig(ctx *gin.Context) {
 func (c *ConfigController) GetFeatures(ctx *gin.Context) {
 	// Public features (free tier)
 	features := c.configService.GetFeatureFlags("public", false)
-	
+
 	ctx.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"data":    features,
@@ -92,10 +92,10 @@ func (c *ConfigController) GetUserConfig(ctx *gin.Context) {
 		// Mock user ID for testing
 		userID = "123e4567-e89b-12d3-a456-426614174000"
 	}
-	
+
 	// TODO: Check if user is premium from database
 	isPremium := false // This should come from user service
-	
+
 	config, err := c.configService.GetUserConfig(userID, isPremium)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
@@ -104,7 +104,7 @@ func (c *ConfigController) GetUserConfig(ctx *gin.Context) {
 		})
 		return
 	}
-	
+
 	ctx.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"data":    config,
@@ -121,25 +121,20 @@ func (c *ConfigController) GetUserConfig(ctx *gin.Context) {
 // @Success 200 {object} services.MenuConfig
 // @Router /api/v1/config/menus [get]
 func (c *ConfigController) GetMenus(ctx *gin.Context) {
-	// In mock mode, use a default user ID
-	userID := ctx.GetString("user_id")
-	if userID == "" {
-		// Mock user ID for testing
-		userID = "123e4567-e89b-12d3-a456-426614174000"
-	}
-	
+	// No need for user ID in mock mode
+
 	// TODO: Get user premium status from database
 	isPremium := false
-	
+
 	features := c.configService.GetFeatureFlags("user", isPremium)
-	
+
 	menus := services.MenuConfig{
 		MainMenu:     c.configService.GetMainMenu(features, isPremium),
 		UserMenu:     c.configService.GetUserMenu(isPremium),
 		SettingsMenu: c.configService.GetSettingsMenu(features),
 		QuickActions: c.configService.GetQuickActions(features),
 	}
-	
+
 	// Add notification badges if needed
 	// TODO: Get notification counts from services
 	for i, item := range menus.MainMenu {
@@ -151,7 +146,7 @@ func (c *ConfigController) GetMenus(ctx *gin.Context) {
 			}
 		}
 	}
-	
+
 	ctx.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"data":    menus,
@@ -169,7 +164,7 @@ func (c *ConfigController) GetMenus(ctx *gin.Context) {
 // @Router /api/v1/config/settings [get]
 func (c *ConfigController) GetSettings(ctx *gin.Context) {
 	settings := c.configService.GetAppSettings()
-	
+
 	ctx.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"data":    settings,
@@ -186,7 +181,7 @@ func (c *ConfigController) GetSettings(ctx *gin.Context) {
 // @Router /api/v1/config/languages [get]
 func (c *ConfigController) GetLanguages(ctx *gin.Context) {
 	languages := c.configService.GetLanguages()
-	
+
 	ctx.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"data":    languages,
@@ -203,7 +198,7 @@ func (c *ConfigController) GetLanguages(ctx *gin.Context) {
 // @Router /api/v1/config/themes [get]
 func (c *ConfigController) GetThemes(ctx *gin.Context) {
 	themes := c.configService.GetThemes()
-	
+
 	ctx.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"data":    themes,
@@ -220,7 +215,7 @@ func (c *ConfigController) GetThemes(ctx *gin.Context) {
 // @Router /api/v1/config/currencies [get]
 func (c *ConfigController) GetCurrencies(ctx *gin.Context) {
 	currencies := c.configService.GetCurrencies()
-	
+
 	ctx.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"data":    currencies,
@@ -239,7 +234,7 @@ func (c *ConfigController) GetCurrencies(ctx *gin.Context) {
 func (c *ConfigController) GetCategories(ctx *gin.Context) {
 	lang := ctx.DefaultQuery("lang", "pt")
 	categories := c.configService.GetCategories(lang)
-	
+
 	ctx.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"data":    categories,
@@ -258,7 +253,7 @@ func (c *ConfigController) GetCategories(ctx *gin.Context) {
 func (c *ConfigController) GetSubscriptionTypes(ctx *gin.Context) {
 	lang := ctx.DefaultQuery("lang", "pt")
 	types := c.configService.GetSubscriptionTypes(lang)
-	
+
 	ctx.JSON(http.StatusOK, gin.H{
 		"success": true,
 		"data":    types,

@@ -5,8 +5,8 @@ import (
 	"log"
 	"time"
 
-	"github.com/suma/finance-app-api/internal/config"
-	"github.com/suma/finance-app-api/internal/models"
+	"github.com/rmar-dev/suma-backend/internal/config"
+	"github.com/rmar-dev/suma-backend/internal/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -22,7 +22,7 @@ func Initialize(cfg *config.DatabaseConfig) error {
 	)
 
 	var gormConfig *gorm.Config
-	
+
 	// Configure logging based on environment
 	if cfg.SSLMode == "disable" { // Development mode
 		gormConfig = &gorm.Config{

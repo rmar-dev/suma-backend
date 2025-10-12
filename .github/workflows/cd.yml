@@ -44,8 +44,21 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
-          curl -L https://github.com/golang-migrate/migrate/releases/download/v4.16.2/migrate.linux-amd64.tar.gz | tar xvz
-          ./migrate -database "${DATABASE_URL}" -path migrations up
+          # Create a temporary directory
+          mkdir -p ./tmp
+          cd ./tmp
+          
+          # Download and extract migrate tool
+          curl -L https://github.com/golang-migrate/migrate/releases/download/v4.16.2/migrate.linux-amd64.tar.gz -o migrate.tar.gz
+          tar xzf migrate.tar.gz
+          chmod +x migrate
+          
+          # Run migrations
+          ./migrate -database "${DATABASE_URL}" -path ../migrations up
+          
+          # Clean up
+          cd ..
+          rm -rf ./tmp
 
       - name: Run Health Check
         uses: jtalk/url-health-check-action@v3

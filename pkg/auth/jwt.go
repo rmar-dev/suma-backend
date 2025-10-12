@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
+	jwtlib "github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
 
@@ -21,7 +21,7 @@ type Claims struct {
 	UserID    uuid.UUID `json:"user_id"`
 	Email     string    `json:"email"`
 	TokenType TokenType `json:"token_type"`
-	jwt.RegisteredClaims
+	jwtlib.RegisteredClaims
 }
 
 // JWTManager handles JWT operations
@@ -79,16 +79,16 @@ func (j *JWTManager) GenerateToken(userID uuid.UUID, email string, tokenType Tok
 		UserID:    userID,
 		Email:     email,
 		TokenType: tokenType,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(expiry)),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
-			NotBefore: jwt.NewNumericDate(time.Now()),
+		RegisteredClaims: jwtlib.RegisteredClaims{
+			ExpiresAt: jwtlib.NewNumericDate(time.Now().Add(expiry)),
+			IssuedAt:  jwtlib.NewNumericDate(time.Now()),
+			NotBefore: jwtlib.NewNumericDate(time.Now()),
 			Issuer:    "finance-app-api",
 			Subject:   userID.String(),
 		},
 	}
 
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	token := jwtlib.NewWithClaims(jwtlib.SigningMethodHS256, claims)
 	return token.SignedString([]byte(secret))
 }
 
@@ -105,8 +105,8 @@ func (j *JWTManager) ValidateToken(tokenString string, tokenType TokenType) (*Cl
 		return nil, errors.New("invalid token type")
 	}
 
-	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+	token, err := jwtlib.ParseWithClaims(tokenString, &Claims{}, func(token *jwtlib.Token) (interface{}, error) {
+		if _, ok := token.Method.(*jwtlib.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		return []byte(secret), nil

@@ -5,17 +5,17 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
-	"github.com/suma/finance-app-api/internal/database"
-	"github.com/suma/finance-app-api/internal/models"
-	"github.com/suma/finance-app-api/pkg/auth"
+	validatorlib "github.com/go-playground/validator/v10"
+	"github.com/rmar-dev/suma-backend/internal/database"
+	"github.com/rmar-dev/suma-backend/internal/models"
+	"github.com/rmar-dev/suma-backend/pkg/auth"
 	"gorm.io/gorm"
 )
 
 type AuthController struct {
 	db         *gorm.DB
 	jwtManager *auth.JWTManager
-	validator  *validator.Validate
+	validator  *validatorlib.Validate
 }
 
 // NewAuthController creates a new authentication controller
@@ -23,7 +23,7 @@ func NewAuthController(jwtManager *auth.JWTManager) *AuthController {
 	return &AuthController{
 		db:         database.GetDB(),
 		jwtManager: jwtManager,
-		validator:  validator.New(),
+		validator:  validatorlib.New(),
 	}
 }
 
@@ -55,7 +55,7 @@ type RefreshRequest struct {
 // Register handles user registration
 func (ac *AuthController) Register(c *gin.Context) {
 	var req RegisterRequest
-	
+
 	// Bind JSON
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
@@ -219,7 +219,7 @@ func (ac *AuthController) Logout(c *gin.Context) {
 	// In a JWT-based system, logout is typically handled client-side
 	// by removing the tokens. Optionally, you can implement a token
 	// blacklist here if needed.
-	
+
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Logout successful. Please remove tokens from client storage.",
 	})

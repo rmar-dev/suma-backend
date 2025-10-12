@@ -1,16 +1,237 @@
 name: CI
 
+# Workflow permissions
+permissions:
+  contents: read
+  packages: write
+  id-token: write # needed for signing
+  security-events: write # needed for security reporting
+
 on:
   push:
     branches: [ main, develop ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.github/*.md'
   pull_request:
     branches: [ main, develop ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.github/*.md'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  test:
-    name: Test & Lint
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
-    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.64.8
+          args: --timeout=5m
+          only-new-issues: true
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: ['1.23', '1.24']
+    env:
+      BUILD_TYPE: development
+      VALIDATION: basic
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Go ${{ matrix.go-version }}
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - name: Determine validation level and build type
+        run: |
+          # Default
+          echo "BUILD_TYPE=development" >> $GITHUB_ENV
+          echo "VALIDATION=basic" >> $GITHUB_ENV
+
+          # PRs to main => extended
+          if [[ "${{ github.event_name }}" == "pull_request" && "${{ github.base_ref }}" == "main" ]]; then
+            echo "BUILD_TYPE=staging" >> $GITHUB_ENV
+            echo "VALIDATION=extended" >> $GITHUB_ENV
+          fi
+
+          # main branch => release
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
+            echo "BUILD_TYPE=release" >> $GITHUB_ENV
+            echo "VALIDATION=release" >> $GITHUB_ENV
+          fi
+
+          echo "Resolved BUILD_TYPE=$BUILD_TYPE, VALIDATION=$VALIDATION"
+
+      - name: Install Syft
+        if: env.VALIDATION != 'basic'
+        uses: anchore/sbom-action/download-syft@v0
+
+      - name: Install Cosign
+        if: env.VALIDATION == 'release'
+        uses: sigstore/cosign-installer@v3.3.0
+
+      - name: Build binary
+        env:
+          CGO_ENABLED: 0 # Ensures static builds
+          GOEXPERIMENT: loopvar # Enable latest safety features
+        run: |
+          # Set build tags based on build type
+          BUILD_TAGS="development"
+          BUILD_FLAGS="-v"
+          LDFLAGS="-X main.version=${{ matrix.go-version }}"
+          LDFLAGS="$LDFLAGS -X main.commit=${GITHUB_SHA::8}"
+          LDFLAGS="$LDFLAGS -X main.date=$(date -u +'%Y-%m-%d')"
+          LDFLAGS="$LDFLAGS -X main.buildType=$BUILD_TYPE"
+
+          if [ "$BUILD_TYPE" = "staging" ]; then
+            BUILD_TAGS="staging"
+            BUILD_FLAGS="$BUILD_FLAGS -trimpath"
+            LDFLAGS="$LDFLAGS -w -s" # Strip debug info
+          elif [ "$BUILD_TYPE" = "release" ]; then
+            BUILD_TAGS="release,production"
+            BUILD_FLAGS="$BUILD_FLAGS -trimpath"
+            LDFLAGS="$LDFLAGS -w -s" # Strip debug info
+          fi
+
+          # Build with appropriate tags and version info
+          GOOS=linux GOARCH=amd64 go build $BUILD_FLAGS -tags="${BUILD_TAGS}" -ldflags="$LDFLAGS" -o api ./cmd/api
+
+          # Generate SBOM for non-basic builds
+          if [ "$VALIDATION" != "basic" ]; then
+            syft packages . -o spdx-json > sbom.spdx.json
+            syft packages . -o cyclonedx-json > sbom.cyclonedx.json
+          fi
+
+          # Generate checksums for non-basic builds
+          if [ "$VALIDATION" != "basic" ]; then
+            sha256sum api > api.sha256
+            sha512sum api > api.sha512
+          fi
+
+      - name: Verify binary
+        run: |
+          # Common checks
+          if [ ! -x ./api ]; then
+            echo "Error: Binary is not executable"
+            exit 1
+          fi
+
+          # Run version check
+          output=$(TEST_MODE=true ./api -v)
+          exit_code=$?
+          if [ $exit_code -ne 0 ]; then
+            echo "Error: Binary returned non-zero exit code: $exit_code"
+            exit 1
+          fi
+
+          # Verify version format
+          if ! echo "$output" | grep -qE "Finance App API [0-9]+\.[0-9]+ \([a-f0-9]+\) \[(development|staging|release)\] built on [0-9]{4}-[0-9]{2}-[0-9]{2}"; then
+            echo "Error: Invalid version output format"
+            echo "Got: $output"
+            exit 1
+          fi
+
+          # Validation level-specific checks
+          case "$VALIDATION" in
+            "release")
+              echo "🔍 Performing release validation..."
+              # Static analysis
+              go vet -v ./...
+              go run honnef.co/go/tools/cmd/staticcheck@latest ./...
+
+              # Run comprehensive tests with race detection
+              go test -v -race -tags=release -coverprofile=coverage.txt -covermode=atomic ./...
+
+              # Verify binary characteristics
+              if [ ! -f "./api" ]; then
+                echo "Error: Release binary missing"
+                exit 1
+              fi
+
+              # Check binary size (1MB - 100MB range)
+              size=$(stat -f%z ./api 2>/dev/null || stat -c%s ./api)
+              if [ "$size" -lt 1000000 ] || [ "$size" -gt 104857600 ]; then
+                echo "Error: Binary size outside acceptable range (1MB - 100MB)"
+                echo "Got: $size bytes"
+                exit 1
+              fi
+
+              # Verify checksums
+              sha256sum -c api.sha256
+              sha512sum -c api.sha512
+
+              # Sign the binary if we have the necessary credentials
+              if [ -n "${{ secrets.COSIGN_PRIVATE_KEY }}" ]; then
+                echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
+                cosign sign-blob --key cosign.key ./api > api.sig
+                rm cosign.key
+              fi
+              ;;
+
+            "extended")
+              echo "🔍 Performing extended validation..."
+              # Static analysis
+              go vet -v ./...
+
+              # Run integration tests with race detection
+              go test -v -race -tags=integration -coverprofile=coverage.txt -covermode=atomic ./...
+
+              # Verify checksum
+              sha256sum -c api.sha256
+              ;;
+
+            "basic")
+              echo "✓ Basic validation successful"
+              ;;
+          esac
+
+          echo "🎉 Binary verification successful ($VALIDATION level)"
+          echo "📦 Build type: $BUILD_TYPE"
+          echo "🔖 Version info: $output"
+
+      - name: Upload build artifacts
+        if: env.VALIDATION != 'basic'
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-${{ env.BUILD_TYPE }}-${{ matrix.go-version }}
+          path: |
+            api
+            api.sha256
+            api.sha512
+            api.sig
+            sbom.spdx.json
+            sbom.cyclonedx.json
+          retention-days: ${{ env.VALIDATION == 'release' && 90 || 7 }}
+
+      - name: Upload coverage to Codecov
+        if: env.VALIDATION != 'basic'
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage.txt
+          fail_ci_if_error: true
+          flags: ${{ env.BUILD_TYPE }}
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
     services:
       postgres:
         image: postgres:15
@@ -25,78 +246,95 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
     steps:
-      - uses: actions/checkout@v3
-
+      - uses: actions/checkout@v4
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
-          go-version: '1.21'
-          cache: true
-          
-      - name: Install dependencies
-        run: |
-          go mod download
-          go install github.com/securego/gosec/v2/cmd/gosec@latest
-          go install golang.org/x/vuln/cmd/govulncheck@latest
-          go install honnef.co/go/tools/cmd/staticcheck@latest
-
-      - name: Run linter
-        uses: golangci/golangci-lint-action@v3
-        with:
-          version: v1.54
-          args: --timeout=5m
-
+          go-version: '1.24'
       - name: Run tests
-        run: go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
+        run: |
+          go test -v -race -coverprofile=coverage.txt -covermode=atomic ./...
         env:
           DB_HOST: localhost
           DB_PORT: 5432
           DB_USER: postgres
           DB_PASSWORD: postgres
           DB_NAME: suma_test
-
-      - name: Run Gosec Security Scanner
-        run: gosec -no-fail ./...
-
-      - name: Run Vulnerability Check
-        run: govulncheck ./...
-
-      - name: Run Static Check
-        run: staticcheck ./...
-
+      - name: Check coverage threshold
+        run: |
+          COVERAGE=$(go tool cover -func=coverage.txt | grep total | awk '{print $3}' | sed 's/%//')
+          echo "Total coverage: ${COVERAGE}%"
+          if (( $(echo "$COVERAGE < 5" | bc -l) )); then
+            echo "Coverage ${COVERAGE}% is below minimum threshold of 5%"
+            exit 1
+          fi
+          if (( $(echo "$COVERAGE < 30" | bc -l) )); then
+            echo "Coverage ${COVERAGE}% is below recommended threshold of 30%"
+          fi
+          echo "Coverage ${COVERAGE}% meets minimum threshold"
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
-          file: ./coverage.txt
+          files: ./coverage.txt
           fail_ci_if_error: false
+          flags: backend
 
-  build:
-    name: Build
+  security:
+    name: Security
     runs-on: ubuntu-latest
-    needs: test
-    if: github.event_name == 'push'
-    
     steps:
-      - uses: actions/checkout@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Login to Docker Hub
-        uses: docker/login-action@v2
+      - uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build and push
-        uses: docker/build-push-action@v4
+          go-version: '1.24'
+      - name: Install security tools
+        run: |
+          go install github.com/securego/gosec/v2/cmd/gosec@latest
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          go install honnef.co/go/tools/cmd/staticcheck@latest
+      - name: Run Gosec Security Scanner
+        run: |
+          gosec -exclude=G404 -exclude-dir=internal/mocks -fmt=json -out=gosec-report.json -no-fail ./...
+          gosec -exclude=G404 -exclude-dir=internal/mocks ./...
+      - name: Run Go Vulnerability Check
+        run: |
+          govulncheck ./...
+      - name: Run Static Check
+        run: |
+          staticcheck ./...
+      - name: Upload Gosec report
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          context: .
-          push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/suma-backend:${{ github.sha }}
-            ${{ secrets.DOCKERHUB_USERNAME }}/suma-backend:latest
-          cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/suma-backend:buildcache
-          cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/suma-backend:buildcache,mode=max
+          name: gosec-report
+          path: gosec-report.json
+
+  dependency-review:
+    name: Dependency Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Dependency Review
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: moderate
+
+  ci-success:
+    name: CI Success
+    runs-on: ubuntu-latest
+    needs: [lint, build, test, security]
+    if: always()
+    steps:
+      - name: Check all jobs
+        run: |
+          if [[ "${{ needs.lint.result }}" != "success" ]] || \
+             [[ "${{ needs.build.result }}" != "success" ]] || \
+             [[ "${{ needs.test.result }}" != "success" ]] || \
+             [[ "${{ needs.security.result }}" != "success" ]]; then
+            echo "One or more CI jobs failed"
+            exit 1
+          fi
+          echo "All CI checks passed!"

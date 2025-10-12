@@ -48,6 +48,9 @@ logs/
 *.db
 *.sqlite
 
+# Migration state
+*.sql-state
+
 # Temporary files
 tmp/
 temp/

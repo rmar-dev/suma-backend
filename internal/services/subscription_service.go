@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/suma/finance-app-api/internal/models"
-	"github.com/suma/finance-app-api/internal/repository"
+	"github.com/rmar-dev/suma-backend/internal/models"
+	"github.com/rmar-dev/suma-backend/internal/repository"
 )
 
 type SubscriptionService struct {
@@ -28,7 +28,7 @@ func (s *SubscriptionService) DetectRecurringPayments(userID string, accountID s
 	// Get last 90 days of transactions
 	endDate := time.Now()
 	startDate := endDate.AddDate(0, 0, -90)
-	
+
 	transactions, err := s.transactionRepo.GetByDateRange(accountID, startDate, endDate)
 	if err != nil {
 		return nil, err
@@ -36,25 +36,25 @@ func (s *SubscriptionService) DetectRecurringPayments(userID string, accountID s
 
 	// Group transactions by merchant and amount
 	merchantGroups := s.groupTransactionsByMerchant(transactions)
-	
+
 	var detectedSubscriptions []*models.Subscription
-	
+
 	for merchant, txns := range merchantGroups {
 		// Need at least 2 transactions to detect pattern
 		if len(txns) < 2 {
 			continue
 		}
-		
+
 		// Check if amounts are consistent
 		amounts := s.extractAmounts(txns)
 		if !s.areAmountsConsistent(amounts) {
 			continue
 		}
-		
+
 		// Check if timing is regular
 		dates := s.extractDates(txns)
 		billingCycle, confidence := s.detectBillingCycle(dates)
-		
+
 		if confidence > 0.7 { // 70% confidence threshold
 			subscription := &models.Subscription{
 				ID:               uuid.New(),
@@ -77,25 +77,25 @@ func (s *SubscriptionService) DetectRecurringPayments(userID string, accountID s
 				CreatedAt:        time.Now(),
 				UpdatedAt:        time.Now(),
 			}
-			
+
 			detectedSubscriptions = append(detectedSubscriptions, subscription)
 		}
 	}
-	
+
 	return detectedSubscriptions, nil
 }
 
 // groupTransactionsByMerchant groups transactions by merchant name
 func (s *SubscriptionService) groupTransactionsByMerchant(transactions []*models.Transaction) map[string][]*models.Transaction {
 	groups := make(map[string][]*models.Transaction)
-	
+
 	for _, txn := range transactions {
 		if txn.MerchantName != "" && txn.Amount < 0 { // Only consider debits
 			normalizedName := s.normalizeMerchantName(txn.MerchantName)
 			groups[normalizedName] = append(groups[normalizedName], txn)
 		}
 	}
-	
+
 	return groups
 }
 
@@ -104,17 +104,17 @@ func (s *SubscriptionService) normalizeMerchantName(name string) string {
 	// Remove common suffixes and clean up
 	name = strings.ToLower(name)
 	name = strings.TrimSpace(name)
-	
+
 	// Remove common payment processor suffixes
 	suffixes := []string{
 		" recurring", " subscription", " monthly", " annual",
 		" *", ".", ",", "-", "_",
 	}
-	
+
 	for _, suffix := range suffixes {
 		name = strings.TrimSuffix(name, suffix)
 	}
-	
+
 	return name
 }
 
@@ -144,14 +144,14 @@ func (s *SubscriptionService) areAmountsConsistent(amounts []float64) bool {
 	if len(amounts) < 2 {
 		return false
 	}
-	
+
 	// Calculate average
 	var sum float64
 	for _, amt := range amounts {
 		sum += amt
 	}
 	avg := sum / float64(len(amounts))
-	
+
 	// Check if all amounts are within 10% of average
 	for _, amt := range amounts {
 		deviation := math.Abs(amt-avg) / avg
@@ -159,7 +159,7 @@ func (s *SubscriptionService) areAmountsConsistent(amounts []float64) bool {
 			return false
 		}
 	}
-	
+
 	return true
 }
 
@@ -169,11 +169,11 @@ func (s *SubscriptionService) extractDates(transactions []*models.Transaction) [
 	for i, txn := range transactions {
 		dates[i] = txn.TransactionDate
 	}
-	
+
 	sort.Slice(dates, func(i, j int) bool {
 		return dates[i].Before(dates[j])
 	})
-	
+
 	return dates
 }
 
@@ -182,24 +182,24 @@ func (s *SubscriptionService) detectBillingCycle(dates []time.Time) (string, flo
 	if len(dates) < 2 {
 		return "", 0
 	}
-	
+
 	// Calculate intervals between dates
 	intervals := make([]int, len(dates)-1)
 	for i := 1; i < len(dates); i++ {
 		intervals[i-1] = int(dates[i].Sub(dates[i-1]).Hours() / 24) // Days between
 	}
-	
+
 	// Calculate average interval
 	var sum int
 	for _, interval := range intervals {
 		sum += interval
 	}
 	avgInterval := float64(sum) / float64(len(intervals))
-	
+
 	// Determine billing cycle based on average interval
 	var billingCycle string
 	var expectedInterval float64
-	
+
 	switch {
 	case avgInterval >= 7-2 && avgInterval <= 7+2:
 		billingCycle = "weekly"
@@ -219,7 +219,7 @@ func (s *SubscriptionService) detectBillingCycle(dates []time.Time) (string, flo
 	default:
 		return "", 0
 	}
-	
+
 	// Calculate confidence based on consistency
 	var variance float64
 	for _, interval := range intervals {
@@ -227,10 +227,10 @@ func (s *SubscriptionService) detectBillingCycle(dates []time.Time) (string, flo
 	}
 	variance = variance / float64(len(intervals))
 	stdDev := math.Sqrt(variance)
-	
+
 	// Confidence decreases with higher standard deviation
 	confidence := math.Max(0, 1-stdDev/expectedInterval)
-	
+
 	return billingCycle, confidence
 }
 
@@ -255,18 +255,18 @@ func (s *SubscriptionService) calculateNextBillingDate(lastDate time.Time, billi
 // categorizeSubscription attempts to categorize based on merchant name
 func (s *SubscriptionService) categorizeSubscription(merchant string) string {
 	merchant = strings.ToLower(merchant)
-	
+
 	categories := map[string][]string{
-		"Entertainment": {"netflix", "spotify", "hbo", "disney", "prime video", "youtube", "twitch"},
-		"Software":      {"adobe", "microsoft", "dropbox", "google", "slack", "zoom", "notion"},
-		"Gaming":        {"xbox", "playstation", "steam", "epic", "nintendo"},
-		"Fitness":       {"gym", "fitness", "strava", "peloton"},
-		"News":          {"times", "post", "journal", "news"},
-		"Food":          {"uber eats", "grubhub", "doordash", "hello fresh"},
+		"Entertainment":  {"netflix", "spotify", "hbo", "disney", "prime video", "youtube", "twitch"},
+		"Software":       {"adobe", "microsoft", "dropbox", "google", "slack", "zoom", "notion"},
+		"Gaming":         {"xbox", "playstation", "steam", "epic", "nintendo"},
+		"Fitness":        {"gym", "fitness", "strava", "peloton"},
+		"News":           {"times", "post", "journal", "news"},
+		"Food":           {"uber eats", "grubhub", "doordash", "hello fresh"},
 		"Transportation": {"uber", "lyft", "lime", "bird"},
-		"Utilities":     {"electric", "gas", "water", "internet", "phone", "mobile"},
+		"Utilities":      {"electric", "gas", "water", "internet", "phone", "mobile"},
 	}
-	
+
 	for category, keywords := range categories {
 		for _, keyword := range keywords {
 			if strings.Contains(merchant, keyword) {
@@ -274,7 +274,7 @@ func (s *SubscriptionService) categorizeSubscription(merchant string) string {
 			}
 		}
 	}
-	
+
 	return "Other"
 }
 
@@ -286,7 +286,7 @@ func (s *SubscriptionService) CreateManualSubscription(subscription *models.Subs
 	subscription.Status = "active"
 	subscription.CreatedAt = time.Now()
 	subscription.UpdatedAt = time.Now()
-	
+
 	return s.subscriptionRepo.Create(subscription)
 }
 
@@ -301,13 +301,13 @@ func (s *SubscriptionService) CancelSubscription(subscriptionID string, reason s
 	if err != nil {
 		return err
 	}
-	
+
 	subscription.Status = "cancelled"
 	now := time.Now()
 	subscription.CancelledAt = &now
 	subscription.CancellationReason = reason
 	subscription.UpdatedAt = now
-	
+
 	return s.subscriptionRepo.Update(subscription)
 }
 
@@ -323,13 +323,13 @@ func (s *SubscriptionService) CalculateTotalMonthlySpend(userID string) (float64
 	if err != nil {
 		return 0, err
 	}
-	
+
 	var total float64
 	for _, sub := range subscriptions {
 		monthlyAmount := s.convertToMonthly(sub.Amount, string(sub.BillingCycle))
 		total += monthlyAmount
 	}
-	
+
 	return total, nil
 }
 
