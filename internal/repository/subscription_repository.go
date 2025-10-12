@@ -54,7 +54,7 @@ func (r *SubscriptionRepository) Delete(id string) error {
 // GetUpcomingPayments retrieves subscriptions with upcoming billing dates
 func (r *SubscriptionRepository) GetUpcomingPayments(userID string, endDate time.Time) ([]*models.Subscription, error) {
 	var subscriptions []*models.Subscription
-	err := r.db.Where("user_id = ? AND status = ? AND next_billing_date <= ?", 
+	err := r.db.Where("user_id = ? AND status = ? AND next_billing_date <= ?",
 		userID, "active", endDate).
 		Order("next_billing_date ASC").
 		Find(&subscriptions).Error
@@ -72,7 +72,7 @@ func (r *SubscriptionRepository) GetByAccountID(accountID string) ([]*models.Sub
 func (r *SubscriptionRepository) CheckDuplicateSubscription(userID, merchantName string, amount float64) (bool, error) {
 	var count int64
 	err := r.db.Model(&models.Subscription{}).
-		Where("user_id = ? AND merchant_name = ? AND amount = ? AND status = ?", 
+		Where("user_id = ? AND merchant_name = ? AND amount = ? AND status = ?",
 			userID, merchantName, amount, "active").
 		Count(&count).Error
 	return count > 0, err

@@ -2,10 +2,11 @@ package controllers
 
 import (
 	"net/http"
-	"github.com/gin-gonic/gin"
-	"github.com/rmar-dev/suma-backend/internal/mocks"
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"github.com/rmar-dev/suma-backend/internal/mocks"
 )
 
 // MockAuthController handles authentication endpoints with mock data
@@ -154,9 +155,9 @@ func (c *MockAccountController) Delete(ctx *gin.Context) {
 func (c *MockAccountController) Sync(ctx *gin.Context) {
 	transactions := mocks.GenerateMockTransactions()[:10]
 	ctx.JSON(http.StatusOK, gin.H{
-		"message":      "Sync completed successfully",
+		"message":          "Sync completed successfully",
 		"new_transactions": len(transactions),
-		"last_sync":    time.Now(),
+		"last_sync":        time.Now(),
 	})
 }
 
@@ -247,8 +248,8 @@ func (c *MockSubscriptionController) Delete(ctx *gin.Context) {
 func (c *MockSubscriptionController) Detect(ctx *gin.Context) {
 	subscriptions := mocks.GenerateMockSubscriptions()[:2]
 	ctx.JSON(http.StatusOK, gin.H{
-		"message":   "Auto-detection completed",
-		"detected":  len(subscriptions),
+		"message":       "Auto-detection completed",
+		"detected":      len(subscriptions),
 		"subscriptions": subscriptions,
 	})
 }

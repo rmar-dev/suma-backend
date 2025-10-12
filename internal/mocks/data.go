@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/rand"
 	"time"
+
 	"github.com/google/uuid"
 )
 
@@ -30,34 +31,34 @@ func GenerateMockUser() map[string]interface{} {
 func GenerateMockAccounts() []map[string]interface{} {
 	accounts := []map[string]interface{}{
 		{
-			"id":            uuid.New().String(),
-			"user_id":       uuid.New().String(),
-			"bank_name":     "Millennium BCP",
-			"account_name":  "Conta à Ordem",
-			"account_type":  "checking",
+			"id":             uuid.New().String(),
+			"user_id":        uuid.New().String(),
+			"bank_name":      "Millennium BCP",
+			"account_name":   "Conta à Ordem",
+			"account_type":   "checking",
 			"account_number": "**** **** **** 1234",
-			"iban":          "PT50 **** **** **** **** **** 1",
-			"balance":       2543.67,
-			"currency":      "EUR",
-			"is_primary":    true,
-			"last_sync":     time.Now().Add(-1 * time.Hour),
-			"created_at":    time.Now().Add(-180 * 24 * time.Hour),
-			"status":        "active",
+			"iban":           "PT50 **** **** **** **** **** 1",
+			"balance":        2543.67,
+			"currency":       "EUR",
+			"is_primary":     true,
+			"last_sync":      time.Now().Add(-1 * time.Hour),
+			"created_at":     time.Now().Add(-180 * 24 * time.Hour),
+			"status":         "active",
 		},
 		{
-			"id":            uuid.New().String(),
-			"user_id":       uuid.New().String(),
-			"bank_name":     "Santander Totta",
-			"account_name":  "Conta Poupança",
-			"account_type":  "savings",
+			"id":             uuid.New().String(),
+			"user_id":        uuid.New().String(),
+			"bank_name":      "Santander Totta",
+			"account_name":   "Conta Poupança",
+			"account_type":   "savings",
 			"account_number": "**** **** **** 5678",
-			"iban":          "PT50 **** **** **** **** **** 2",
-			"balance":       15234.50,
-			"currency":      "EUR",
-			"is_primary":    false,
-			"last_sync":     time.Now().Add(-2 * time.Hour),
-			"created_at":    time.Now().Add(-90 * 24 * time.Hour),
-			"status":        "active",
+			"iban":           "PT50 **** **** **** **** **** 2",
+			"balance":        15234.50,
+			"currency":       "EUR",
+			"is_primary":     false,
+			"last_sync":      time.Now().Add(-2 * time.Hour),
+			"created_at":     time.Now().Add(-90 * 24 * time.Hour),
+			"status":         "active",
 		},
 	}
 	return accounts
@@ -67,17 +68,17 @@ func GenerateMockAccounts() []map[string]interface{} {
 func GenerateMockTransactions() []map[string]interface{} {
 	categories := []string{"Alimentação", "Transportes", "Entretenimento", "Serviços", "Saúde", "Educação", "Compras"}
 	merchants := []string{"Continente", "Pingo Doce", "Galp", "Netflix", "Spotify", "Farmácia Santos", "Fnac", "Worten"}
-	
+
 	var transactions []map[string]interface{}
 	now := time.Now()
-	
+
 	for i := 0; i < 50; i++ {
 		isExpense := rand.Float32() > 0.2 // 80% expenses, 20% income
 		amount := rand.Float64() * 200
 		if !isExpense {
-			amount = rand.Float64() * 3000 + 500 // Income between 500-3500
+			amount = rand.Float64()*3000 + 500 // Income between 500-3500
 		}
-		
+
 		transaction := map[string]interface{}{
 			"id":           uuid.New().String(),
 			"account_id":   uuid.New().String(),
@@ -94,7 +95,7 @@ func GenerateMockTransactions() []map[string]interface{} {
 		}
 		transactions = append(transactions, transaction)
 	}
-	
+
 	return transactions
 }
 
@@ -173,12 +174,12 @@ func GenerateMockSubscriptions() []map[string]interface{} {
 func GenerateMockBudgets() []map[string]interface{} {
 	budgets := []map[string]interface{}{
 		{
-			"id":          uuid.New().String(),
-			"user_id":     uuid.New().String(),
-			"name":        "Orçamento Mensal",
-			"period":      "monthly",
-			"start_date":  time.Now().AddDate(0, 0, -time.Now().Day()+1),
-			"end_date":    time.Now().AddDate(0, 1, -time.Now().Day()),
+			"id":         uuid.New().String(),
+			"user_id":    uuid.New().String(),
+			"name":       "Orçamento Mensal",
+			"period":     "monthly",
+			"start_date": time.Now().AddDate(0, 0, -time.Now().Day()+1),
+			"end_date":   time.Now().AddDate(0, 1, -time.Now().Day()),
 			"categories": []map[string]interface{}{
 				{
 					"name":      "Alimentação",
@@ -211,12 +212,12 @@ func GenerateMockBudgets() []map[string]interface{} {
 			"is_active":       true,
 		},
 		{
-			"id":          uuid.New().String(),
-			"user_id":     uuid.New().String(),
-			"name":        "Poupança para Férias",
-			"period":      "custom",
-			"start_date":  time.Now().AddDate(0, -6, 0),
-			"end_date":    time.Now().AddDate(0, 6, 0),
+			"id":         uuid.New().String(),
+			"user_id":    uuid.New().String(),
+			"name":       "Poupança para Férias",
+			"period":     "custom",
+			"start_date": time.Now().AddDate(0, -6, 0),
+			"end_date":   time.Now().AddDate(0, 6, 0),
 			"categories": []map[string]interface{}{
 				{
 					"name":      "Poupança",
@@ -241,11 +242,11 @@ func GenerateMockReportSummary() map[string]interface{} {
 			"start": time.Now().AddDate(0, -1, 0),
 			"end":   time.Now(),
 		},
-		"total_income":         3250.00,
-		"total_expenses":       2147.83,
-		"net_savings":          1102.17,
-		"savings_rate":         33.91,
-		"average_daily_spend":  71.59,
+		"total_income":        3250.00,
+		"total_expenses":      2147.83,
+		"net_savings":         1102.17,
+		"savings_rate":        33.91,
+		"average_daily_spend": 71.59,
 		"top_categories": []map[string]interface{}{
 			{"name": "Alimentação", "amount": 543.21, "percentage": 25.3},
 			{"name": "Serviços", "amount": 487.99, "percentage": 22.7},
@@ -273,33 +274,33 @@ func GenerateMockReportSummary() map[string]interface{} {
 func GenerateMockSettings() map[string]interface{} {
 	return map[string]interface{}{
 		"notifications": map[string]interface{}{
-			"email_notifications":      true,
-			"push_notifications":       false,
-			"transaction_alerts":       true,
-			"budget_alerts":           true,
-			"subscription_reminders":   true,
-			"weekly_summary":          true,
-			"monthly_report":          true,
+			"email_notifications":    true,
+			"push_notifications":     false,
+			"transaction_alerts":     true,
+			"budget_alerts":          true,
+			"subscription_reminders": true,
+			"weekly_summary":         true,
+			"monthly_report":         true,
 		},
 		"privacy": map[string]interface{}{
-			"show_balance_dashboard":   true,
-			"require_auth_view":       false,
-			"two_factor_enabled":      false,
+			"show_balance_dashboard": true,
+			"require_auth_view":      false,
+			"two_factor_enabled":     false,
 		},
 		"preferences": map[string]interface{}{
-			"language":                "pt",
-			"currency":                "EUR",
-			"timezone":                "Europe/Lisbon",
-			"date_format":             "DD/MM/YYYY",
-			"number_format":           "1.234,56",
-			"start_of_week":           "monday",
-			"fiscal_year_start":       "january",
+			"language":          "pt",
+			"currency":          "EUR",
+			"timezone":          "Europe/Lisbon",
+			"date_format":       "DD/MM/YYYY",
+			"number_format":     "1.234,56",
+			"start_of_week":     "monday",
+			"fiscal_year_start": "january",
 		},
 		"data_management": map[string]interface{}{
-			"auto_categorize":         true,
-			"auto_detect_recurring":   true,
-			"data_retention_months":   24,
-			"last_export":             time.Now().AddDate(0, -1, 0),
+			"auto_categorize":       true,
+			"auto_detect_recurring": true,
+			"data_retention_months": 24,
+			"last_export":           time.Now().AddDate(0, -1, 0),
 		},
 	}
 }

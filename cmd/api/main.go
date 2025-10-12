@@ -8,7 +8,7 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-"github.com/rmar-dev/suma-backend/internal/routes"
+	"github.com/rmar-dev/suma-backend/internal/routes"
 )
 
 func main() {
@@ -47,7 +47,7 @@ func main() {
 	config.AllowMethods = []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"}
 	config.AllowHeaders = []string{"Origin", "Content-Type", "Authorization"}
 	config.AllowCredentials = true
-	
+
 	router.Use(cors.New(config))
 
 	// Setup mock routes
@@ -56,7 +56,7 @@ func main() {
 	}
 
 	// Don't start the server or print info in test mode
-if os.Getenv("TEST_MODE") != "true" {
+	if os.Getenv("TEST_MODE") != "true" {
 		// Print server info and endpoints
 		fmt.Printf("🚀 Finance App API (Mock Mode) starting on port %s\n", port)
 		fmt.Println("📝 API Documentation: http://localhost:" + port + "/api/v1")

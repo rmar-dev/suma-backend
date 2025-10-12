@@ -22,7 +22,7 @@ func Initialize(cfg *config.DatabaseConfig) error {
 	)
 
 	var gormConfig *gorm.Config
-	
+
 	// Configure logging based on environment
 	if cfg.SSLMode == "disable" { // Development mode
 		gormConfig = &gorm.Config{

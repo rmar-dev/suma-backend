@@ -55,7 +55,7 @@ type RefreshRequest struct {
 // Register handles user registration
 func (ac *AuthController) Register(c *gin.Context) {
 	var req RegisterRequest
-	
+
 	// Bind JSON
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request body"})
@@ -219,7 +219,7 @@ func (ac *AuthController) Logout(c *gin.Context) {
 	// In a JWT-based system, logout is typically handled client-side
 	// by removing the tokens. Optionally, you can implement a token
 	// blacklist here if needed.
-	
+
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Logout successful. Please remove tokens from client storage.",
 	})

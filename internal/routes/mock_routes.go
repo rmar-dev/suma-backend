@@ -9,19 +9,19 @@ import (
 // SetupMockRoutes configures all mock API routes
 func SetupMockRoutes(router *gin.Engine) error {
 	// Set trusted proxies (for production, specify actual proxy IPs)
-if err := router.SetTrustedProxies([]string{"127.0.0.1", "::1"}); err != nil {
+	if err := router.SetTrustedProxies([]string{"127.0.0.1", "::1"}); err != nil {
 		return err
 	}
-	
+
 	// Serve static files
 	router.Static("/static", "./static")
 	router.StaticFile("/favicon.ico", "./static/favicon.ico")
-	
+
 	// Root route - API Documentation page
 	router.GET("/", func(c *gin.Context) {
 		c.File("./static/api-docs.html")
 	})
-	
+
 	// Alternative documentation routes
 	router.GET("/docs", func(c *gin.Context) {
 		c.File("./static/api-docs.html")
@@ -29,7 +29,7 @@ if err := router.SetTrustedProxies([]string{"127.0.0.1", "::1"}); err != nil {
 	router.GET("/swagger", func(c *gin.Context) {
 		c.File("./static/api-docs.html")
 	})
-	
+
 	// Setup CORS for development
 	router.Use(func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
@@ -54,7 +54,7 @@ if err := router.SetTrustedProxies([]string{"127.0.0.1", "::1"}); err != nil {
 	budgetController := controllers.NewMockBudgetController()
 	reportController := controllers.NewMockReportController()
 	navigationController := controllers.NewNavigationController()
-	
+
 	// Initialize configuration service and controller
 	configService := services.NewConfigService()
 	configController := controllers.NewConfigController(configService)
@@ -95,7 +95,7 @@ if err := router.SetTrustedProxies([]string{"127.0.0.1", "::1"}); err != nil {
 
 		// Navigation routes
 		v1.GET("/navigation/menu", navigationController.GetMenuOptions)
-		
+
 		// Configuration routes
 		configController.RegisterRoutes(v1)
 
@@ -151,4 +151,3 @@ if err := router.SetTrustedProxies([]string{"127.0.0.1", "::1"}); err != nil {
 	}
 	return nil
 }
-
