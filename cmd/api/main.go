@@ -27,7 +27,7 @@ func main() {
 
 	// Handle version flag
 	if *showVersion {
-		fmt.Printf("Finance App API %s (%s) built on %s\n", version, commit, date)
+		fmt.Printf("Finance App API %s (%s) [%s] built on %s\n", version, commit, buildType, date)
 		os.Exit(0)
 	}
 	// Load environment variables
