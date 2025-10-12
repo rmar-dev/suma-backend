@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"os"
@@ -11,7 +12,23 @@ import (
 	"github.com/rmar-dev/suma-backend/internal/routes"
 )
 
+// Version information - will be set during build
+var (
+	version = "dev"
+	commit  = "none"
+	date    = "unknown"
+)
+
 func main() {
+	// Parse command line flags
+	showVersion := flag.Bool("v", false, "print version information and exit")
+	flag.Parse()
+
+	// Handle version flag
+	if *showVersion {
+		fmt.Printf("Finance App API %s (%s) built on %s\n", version, commit, date)
+		os.Exit(0)
+	}
 	// Load environment variables
 	if err := godotenv.Load(); err != nil {
 		log.Println("No .env file found, using default configuration")

@@ -43,10 +43,13 @@ jobs:
           go-version: ${{ matrix.go-version }}
       - name: Build binary
         run: |
-          go build -v -o api ./cmd/api
+          go build -v -o api \
+            -ldflags="-X main.version=${{ matrix.go-version }} -X main.commit=${GITHUB_SHA::8} -X main.date=$(date -u +'%Y-%m-%d')" \
+            ./cmd/api
       - name: Verify binary
         run: |
-          ./api --help || echo "Binary created successfully"
+          # Use version flag instead of running the server
+          TEST_MODE=true ./api -v || echo "Binary created successfully"
 
   test:
     name: Test
