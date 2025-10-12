@@ -20,6 +20,12 @@ func setupTestRouter() *gin.Engine {
 	return router
 }
 
+func init() {
+	// Set test environment variables
+	os.Setenv("GIN_MODE", "test")
+	os.Setenv("TEST_MODE", "true")
+}
+
 func TestHealthEndpoint(t *testing.T) {
 	router := setupTestRouter()
 

@@ -112,7 +112,10 @@ func main() {
 	fmt.Println("    GET    /api/v1/navigation/menu")
 	fmt.Println("\n✨ Mock mode enabled - returning sample data")
 	
-	if err := router.Run(":" + port); err != nil {
-		log.Fatal("Failed to start server:", err)
+	// Don't start the server in test mode
+	if os.Getenv("TEST_MODE") != "true" {
+		if err := router.Run(":" + port); err != nil {
+			log.Fatal("Failed to start server:", err)
+		}
 	}
 }

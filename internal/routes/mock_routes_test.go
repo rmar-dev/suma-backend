@@ -12,17 +12,6 @@ import (
 func TestMockRoutes(t *testing.T) {
 	// Skip this test for now as we have comprehensive mock data
 	t.Skip("Mock endpoints return comprehensive data instead of simple responses")
-	// Set Gin to test mode
-	gin.SetMode(gin.TestMode)
-
-	// Create test router
-	router := gin.New()
-	if err := SetupMockRoutes(router); err != nil {
-		t.Fatal("Failed to setup routes:", err)
-	}
-
-	// Test cases
-t.Skip("Mock endpoints return comprehensive data instead of simple responses")
 
 	testCases := []struct {
 		name     string
