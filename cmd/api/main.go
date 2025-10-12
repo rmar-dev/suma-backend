@@ -14,9 +14,10 @@ import (
 
 // Version information - will be set during build
 var (
-	version = "dev"
-	commit  = "none"
-	date    = "unknown"
+	version   = "dev"
+	commit    = "none"
+	date      = "unknown"
+	buildType = "development"
 )
 
 func main() {
