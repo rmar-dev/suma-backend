@@ -1,10 +1,25 @@
 name: CI
 
+# Workflow permissions
+permissions:
+  contents: read
+  packages: write
+  id-token: write # needed for signing
+  security-events: write # needed for security reporting
+
 on:
   push:
     branches: [ main, develop ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.github/*.md'
   pull_request:
     branches: [ main, develop ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.github/*.md'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -65,23 +80,51 @@ jobs:
 
           echo "Resolved BUILD_TYPE=$BUILD_TYPE, VALIDATION=$VALIDATION"
 
+      - name: Install Syft
+        if: env.VALIDATION != 'basic'
+        uses: anchore/sbom-action/download-syft@v0
+
+      - name: Install Cosign
+        if: env.VALIDATION == 'release'
+        uses: sigstore/cosign-installer@v3.3.0
+
       - name: Build binary
+        env:
+          CGO_ENABLED: 0 # Ensures static builds
+          GOEXPERIMENT: loopvar # Enable latest safety features
         run: |
           # Set build tags based on build type
           BUILD_TAGS="development"
+          BUILD_FLAGS="-v"
+          LDFLAGS="-X main.version=${{ matrix.go-version }}"
+          LDFLAGS="$LDFLAGS -X main.commit=${GITHUB_SHA::8}"
+          LDFLAGS="$LDFLAGS -X main.date=$(date -u +'%Y-%m-%d')"
+          LDFLAGS="$LDFLAGS -X main.buildType=$BUILD_TYPE"
+
           if [ "$BUILD_TYPE" = "staging" ]; then
             BUILD_TAGS="staging"
+            BUILD_FLAGS="$BUILD_FLAGS -trimpath"
+            LDFLAGS="$LDFLAGS -w -s" # Strip debug info
           elif [ "$BUILD_TYPE" = "release" ]; then
             BUILD_TAGS="release,production"
+            BUILD_FLAGS="$BUILD_FLAGS -trimpath"
+            LDFLAGS="$LDFLAGS -w -s" # Strip debug info
           fi
 
           # Build with appropriate tags and version info
-          go build -v -tags="${BUILD_TAGS}" -o api \
-            -ldflags="-X main.version=${{ matrix.go-version }} \
-                      -X main.commit=${GITHUB_SHA::8} \
-                      -X main.date=$(date -u +'%Y-%m-%d') \
-                      -X main.buildType=$BUILD_TYPE" \
-            ./cmd/api
+          GOOS=linux GOARCH=amd64 go build $BUILD_FLAGS -tags="${BUILD_TAGS}" -ldflags="$LDFLAGS" -o api ./cmd/api
+
+          # Generate SBOM for non-basic builds
+          if [ "$VALIDATION" != "basic" ]; then
+            syft packages . -o spdx-json > sbom.spdx.json
+            syft packages . -o cyclonedx-json > sbom.cyclonedx.json
+          fi
+
+          # Generate checksums for non-basic builds
+          if [ "$VALIDATION" != "basic" ]; then
+            sha256sum api > api.sha256
+            sha512sum api > api.sha512
+          fi
 
       - name: Verify binary
         run: |
@@ -110,25 +153,49 @@ jobs:
           case "$VALIDATION" in
             "release")
               echo "🔍 Performing release validation..."
-              # Run comprehensive tests
-              go test -v -tags=release ./...
-              # Verify all required assets are present
+              # Static analysis
+              go vet -v ./...
+              go run honnef.co/go/tools/cmd/staticcheck@latest ./...
+
+              # Run comprehensive tests with race detection
+              go test -v -race -tags=release -coverprofile=coverage.txt -covermode=atomic ./...
+
+              # Verify binary characteristics
               if [ ! -f "./api" ]; then
                 echo "Error: Release binary missing"
                 exit 1
               fi
-              # Check binary size
+
+              # Check binary size (1MB - 100MB range)
               size=$(stat -f%z ./api 2>/dev/null || stat -c%s ./api)
-              if [ "$size" -lt 1000000 ]; then
-                echo "Error: Binary size suspiciously small"
+              if [ "$size" -lt 1000000 ] || [ "$size" -gt 104857600 ]; then
+                echo "Error: Binary size outside acceptable range (1MB - 100MB)"
+                echo "Got: $size bytes"
                 exit 1
+              fi
+
+              # Verify checksums
+              sha256sum -c api.sha256
+              sha512sum -c api.sha512
+
+              # Sign the binary if we have the necessary credentials
+              if [ -n "${{ secrets.COSIGN_PRIVATE_KEY }}" ]; then
+                echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
+                cosign sign-blob --key cosign.key ./api > api.sig
+                rm cosign.key
               fi
               ;;
 
             "extended")
               echo "🔍 Performing extended validation..."
-              # Run integration tests
-              go test -v -tags=integration ./...
+              # Static analysis
+              go vet -v ./...
+
+              # Run integration tests with race detection
+              go test -v -race -tags=integration -coverprofile=coverage.txt -covermode=atomic ./...
+
+              # Verify checksum
+              sha256sum -c api.sha256
               ;;
 
             "basic")
@@ -139,6 +206,28 @@ jobs:
           echo "🎉 Binary verification successful ($VALIDATION level)"
           echo "📦 Build type: $BUILD_TYPE"
           echo "🔖 Version info: $output"
+
+      - name: Upload build artifacts
+        if: env.VALIDATION != 'basic'
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-${{ env.BUILD_TYPE }}-${{ matrix.go-version }}
+          path: |
+            api
+            api.sha256
+            api.sha512
+            api.sig
+            sbom.spdx.json
+            sbom.cyclonedx.json
+          retention-days: ${{ env.VALIDATION == 'release' && 90 || 7 }}
+
+      - name: Upload coverage to Codecov
+        if: env.VALIDATION != 'basic'
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage.txt
+          fail_ci_if_error: true
+          flags: ${{ env.BUILD_TYPE }}
 
   test:
     name: Test
